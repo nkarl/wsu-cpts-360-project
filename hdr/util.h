@@ -11,3 +11,8 @@ int     search(MINODE *mip, char *name);
 MINODE *path2inode(char *pathname);
 int     findmyname(MINODE *pip, int myino, char myname[]);
 int     findino(MINODE *mip, int *myino);
+
+int error(char *s, int exit_code);
+
+int tst_bit(char *buf, int bit);
+int set_bit(char *buf, int bit);

@@ -191,20 +191,20 @@ void iput(MINODE *mip)  // release a mip
 }
 
 /**********************************************************************
- * search mip by name
+ * search mip by dir name
  */
 int search(MINODE *mip, char *name) {
     /******************
-    search mip->INODE data blocks for name:
+    search the data blocks of some mip->INODE for the given name:
     if (found) return its inode number;
     else       return 0;
     ******************/
-    int   i;
-    char *cp, temp[256], sbuf[BLOCK_SIZE];
+    char *cp, temp[BLOCK_SIZE], sbuf[BLOCK_SIZE];
     DIR  *dp;
-    for (i = 0; i < 12; i++) {  // search DIR direct blocks only
+    for (int i = 0; i < 12; i++) {  // search DIR direct blocks only
+        printf("\t> i=%d\n", i);
         if (mip->INODE.i_block[i] == 0)
-            return 0;
+            return EXIT_SUCCESS;
         get_block(mip->dev, mip->INODE.i_block[i], sbuf);
         dp = (DIR *)sbuf;
         cp = sbuf;
@@ -224,7 +224,7 @@ int search(MINODE *mip, char *name) {
             dp = (DIR *)cp;
         }
     }
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 /**********************************************************************
@@ -252,8 +252,8 @@ MINODE *path2inode(char *pathname) {
     mip->shareCount++;
     // in order to iput(mip) later
     tokenize(pathname);
-    // assume: name[ ], count_name are globals
-    for (i = 0; i < count_name; i++) {
+    // assume: name[ ], amount_name are globals
+    for (i = 0; i < amount_name; i++) {
         // search for each component string
         if (!S_ISDIR(mip->INODE.i_mode)) {  // check DIR type
             printf("%s is not a directory\n", name[i]);
@@ -321,4 +321,68 @@ int findino(MINODE *mip, int *myino) {
     *******************/
     // placeholder return
     return EXIT_SUCCESS;
+}
+
+/**********************************************************************
+ * report error
+ */
+int error(char *s, int exit_code) {
+    fprintf(stderr, "%s\n", s);
+    return exit_code;
+}
+
+/**********************************************************************
+ * test bits in the bitmap of buf
+ */
+int tst_bit(char *buf, int bit) {
+    return buf[bit / 8] & (1 << (bit % 8));
+}
+
+/**********************************************************************
+ * set the bits in the bitmap of buf
+ */
+int set_bit(char *buf, int bit) {
+    buf[bit / 8] |= (1 << (bit % 8));
+    return EXIT_SUCCESS;
+}
+
+/**********************************************************************
+ * decrease the amount of free inodes from dev
+ */
+void decFreeInodes(int dev) {
+    char buf[BLOCK_SIZE];
+
+    // dec free inodes count by 1 in SUPER and GD
+    get_block(dev, 1, buf);
+    SUPER *sp = (SUPER *)buf;
+    sp->s_free_inodes_count--;
+    put_block(dev, 1, buf);
+
+    get_block(dev, 2, buf);
+    GD *gp = (GD *)buf;
+    gp->bg_free_inodes_count--;
+    put_block(dev, 2, buf);
+}
+
+/**********************************************************************
+ * allocate an inode number from imap block
+ */
+int ialloc(int dev) {
+    char buf[BLOCK_SIZE];
+
+    // read inode_bitmap block
+    get_block(dev, imap, buf);
+
+    for (int i = 0; i < amount_inodes; i++) {
+        if (tst_bit(buf, i) == 0) {
+            set_bit(buf, i);
+            put_block(dev, imap, buf);
+
+            decFreeInodes(dev);
+
+            printf("ialloc : ino=%d\n", i + 1);
+            return i + 1;
+        }
+    }
+    return 0;
 }

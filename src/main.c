@@ -8,6 +8,7 @@
 #include "util.c"
 /*#include "globals.c"*/  // included in cd_ls_pwd
 
+static const int RUNNING = 1;
 /**********************************************************************
  * function signatures
  **********************************************************************/
@@ -42,19 +43,19 @@ int init() {
 
     /**
      * intialize all procs.
-     * We have only 2 processes. P1 is always SUPER user then?
+     * We have only 2 procs. P1 is always SUPER user then?
      */
     for (int i = 0; i < NUM_PROC; i++) {
         PROC *p = &proc[i];
-        p->uid = p->gid = i;      // uid=0 for SUPER user
+        p->uid = p->gid = i;      // only P1==proc[0] is a SUPERuser proc
         p->pid          = i + 1;  // pid = 1,2,..., NUM_PROC-1
 
         // for each process, open all file descriptors
         for (int j = 0; j < NUM_FD; j++)
-            p->fd[j] = 0;  // open file descritors are 0
+            p->fd[j] = 0;  // open file descritors are NULL
     }
 
-    running  = &proc[0];  // P1 is running
+    running  = &proc[0];  // P0 is running first
     requests = hits = 0;  // for hit_ratio of minodes cache
 
     // placeholder return
@@ -134,14 +135,12 @@ int main(int argc, char *argv[]) {
 
     /**
      * open and check dev
-     *
      * https://man7.org/linux/man-pages/man2/open.2.html
      */
     fd = dev = open(disk, O_RDWR);
-    printf("dev = %d\n", dev);  // YOU should check dev value: exit if < 0
+    printf(">\t dev = %d\n", dev);  // YOU should check dev value: exit if < 0
     if (dev < 0) {
-        printf("NOT a valid device\n");
-        exit(EXIT_FAILURE);
+        return error("ERROR: NOT a valid device.\n", EXIT_FAILURE);
     }
 
     /**
@@ -150,13 +149,12 @@ int main(int argc, char *argv[]) {
     get_block(dev, SUPER_BLOCK, buf);
     SUPER *sp = (SUPER *)buf;  // you should check s_magic for EXT2 FS
     if (sp->s_magic != MAGIC_EXT2) {
-        printf("NOT an EXT2 FS\n");
-        exit(EXIT_FAILURE);
+        return error("ERROR: NOT an EXT2 FS.\n", EXIT_FAILURE);
     }
 
-    count_inodes = sp->s_inodes_count;
-    count_blocks = sp->s_blocks_count;
-    printf("count_inodes=%d  count_blocks=%d\n", count_inodes, count_blocks);
+    amount_inodes = sp->s_inodes_count;
+    amount_blocks = sp->s_blocks_count;
+    printf(">\t amount_inodes=%d  amount_blocks=%d\n", amount_inodes, amount_blocks);
 
     /**
      * get group descriptor
@@ -167,7 +165,7 @@ int main(int argc, char *argv[]) {
     bmap = gp->bg_block_bitmap;
     imap = gp->bg_inode_bitmap;
     iblk = inodes_start = gp->bg_inode_table;  // sets the start of inode table
-    printf("bmap=%d  imap=%d  iblk=%d\n", bmap, imap, iblk);
+    printf(">\t bmap=%d  imap=%d  iblk=%d\n", bmap, imap, iblk);
 
     // HERE =========================================================
     MINODE *mip = freeList;  // remove minode[0] from freeList
@@ -185,7 +183,7 @@ int main(int argc, char *argv[]) {
 
     root = mip;  // root points at #2 INODE in minode[0]
 
-    printf("set P1's CWD to root\n");
+    printf(">\t set P1's CWD to root.\n");
     running->cwd = root;  // CWD = root
     /*
     // not running properly
@@ -201,12 +199,12 @@ int main(int argc, char *argv[]) {
      running->cwd = iget(dev, 2);
     **********************************************************/
 
-    const int RUNNING = 1;
     while (RUNNING) {
-        printf("P%d running\n", running->pid);
+        printf("\n=============================================================\n");
+        printf("> P%d running. . .\n", running->pid);
         pathname[0] = parameter[0] = 0;
 
-        printf("enter command [cd|ls|pwd|exit] : ");
+        printf("> enter command [cd|ls|pwd|exit] : ");
         fgets(line, 128, stdin);
         line[strlen(line) - 1] = 0;  // kill \n at end
 
@@ -214,15 +212,14 @@ int main(int argc, char *argv[]) {
             continue;
 
         sscanf(line, "%s %s %64c", cmd, pathname, parameter);
-        printf("pathname=%s parameter=%s\n", pathname, parameter);
+        printf("\t pathname=%s parameter=%s\n", pathname, parameter);
 
         if (strcmp(cmd, "ls") == 0)
             ls();
         if (strcmp(cmd, "cd") == 0)
-            cd();
+            cd(pathname);
         if (strcmp(cmd, "pwd") == 0)
-            pwd();
-
+            pwd(running->cwd);
         if (strcmp(cmd, "show") == 0)
             show_dir(mip);
         if (strcmp(cmd, "hits") == 0)

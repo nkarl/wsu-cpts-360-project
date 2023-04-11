@@ -2,18 +2,23 @@
 #include "../hdr/util.h"
 
 extern PROC *running;
-extern int dev;
+extern int   dev;
+extern int   fd, dev;
 
+extern MINODE *root;
 
 // cd_ls_pwd.c file
 
 /**********************************************************************
  * cd
  */
-int cd() {
+int cd(char *pathname) {
     printf("cd: Under Construction\n");
 
     // write YOUR code for cd
+
+    /* remember to set bmap and imap for the new cwd */
+
     // placeholder return
     return EXIT_SUCCESS;
 }
@@ -55,7 +60,6 @@ int ls_dir(MINODE *pip) {
     return EXIT_SUCCESS;
 }
 
-
 /**********************************************************************
  * ls
  */
@@ -71,8 +75,20 @@ int ls() {
 /**********************************************************************
  * pwd
  */
-int pwd() {
+int rpwd(MINODE *wd) {
+    if (wd == root) return EXIT_SUCCESS;
+
+    MINODE *mip = wd;
+    INODE  *ip  = &(mip->INODE);
+    int     ino = search(wd, "..");
+
+    return EXIT_SUCCESS;
+}
+
+int pwd(MINODE *mip) {
     printf("CWD = %s\n", "/");
+    rpwd(mip);
+
     // placeholder return
     return EXIT_SUCCESS;
 }
