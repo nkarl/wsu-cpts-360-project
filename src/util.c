@@ -1,68 +1,58 @@
-#include "../hdr/type.h"
+#include "../hdr/util.h"
 #include "globals.c"
-/*[>********** globals in main.c **********<]*/
-/*extern PROC  proc[NPROC];*/
-/*extern PROC *running;*/
 
-/*extern MINODE  minode[NMINODE];  // minodes*/
-/*extern MINODE *freeList;         // free minodes list*/
-/*extern MINODE *cacheList;        // cacheCount minodes list*/
-
-/*extern MINODE *root;*/
-
-/*extern OFT oft[NOFT];*/
-
-/*extern char  gline[256];  // global line hold token strings of pathname*/
-/*extern char *name[64];    // token string pointers*/
-/*extern int   nname;       // number of token strings*/
-
-/*extern int ninodes, nblocks;*/
-/*extern int bmap, imap, inodes_start, iblk;  // bitmap, inodes block numbers*/
-
-/*extern int  fd, dev;*/
-/*extern char cmd[16], pathname[128], parameter[128];*/
-/*extern int  requests, hits;*/
-
-void insertCacheList(MINODE *mip);
-/**************** util.c file **************/
-
+/**********************************************************************
+ * get_block
+ */
 int get_block(int dev, int blk, char buf[]) {
-    lseek(dev, blk * BLKSIZE, SEEK_SET);
+    lseek(dev, blk * BLOCK_SIZE, SEEK_SET);
     /**
      * https://man7.org/linux/man-pages/man2/read.2.html
      */
-    int n = read(fd, buf, BLKSIZE);
+    int n = read(fd, buf, BLOCK_SIZE);
     return n;
 }
 
+/**********************************************************************
+ * put_block
+ */
 int put_block(int dev, int blk, char buf[]) {
-    lseek(dev, blk * BLKSIZE, SEEK_SET);
-    int n = write(fd, buf, BLKSIZE);
+    lseek(dev, blk * BLOCK_SIZE, SEEK_SET);
+    int n = write(fd, buf, BLOCK_SIZE);
     return n;
 }
 
+/**********************************************************************
+ * tokenize
+ */
 int tokenize(char *pathname) {
     // tokenize pathname into n token strings in (global) gline[ ]
+    // placeholder return
+    return EXIT_SUCCESS;
 }
 
+/**********************************************************************
+ * return a pointer to some minode in dev with given ino.
+ */
 MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
 {
-    /********** Write code to implement these ***********
-    1. search cacheList for minode=(dev, ino);
-    if (found){
-       inc minode's cacheCount by 1;
-       inc minode's shareCount by 1;
-       return minode pointer;
-    }
-    */
     MINODE *mip;
-    MTABLE *mp;
-    INODE  *ip;
-    int     i, block, offset;
-    char    buf[BLKSIZE];
+    /*MTABLE *mp;*/  // not yet needed for level 1
+    INODE *ip;
+    int    block, offset;
+    char   buf[BLOCK_SIZE];
 
-    mip = cacheList;
     requests++;
+
+    /********** Write code to implement these ************/
+
+    /* 1. search cacheList for minode=(dev, ino):
+    if (found) {
+        inc minode's cacheCount by 1;
+        inc minode's shareCount by 1;
+        return minode pointer;
+    }*/
+    mip = cacheList;
     while (mip) {
         if (mip->shareCount && (mip->dev == dev) && (mip->ino == ino)) {  // if exists at least one ref and ...
             mip->cacheCount++;
@@ -72,18 +62,18 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
         }
         mip = mip->next;
     }
+    // needed (dev, ino) NOT in cacheList.
 
-    // needed (dev, ino) NOT in cacheList
-    /*
-    2. if (freeList NOT empty){
-          remove a minode from freeList;
-          set minode to (dev, ino), cacheCount=1 shareCount=1, modified=0;
+    /* 2.
+    if (freeList NOT empty){
+        remove a minode from freeList;
+        set minode to (dev, ino), cacheCount=1 shareCount=1, modified=0;
 
-          load INODE of (dev, ino) from disk into minode.INODE;
+        load INODE of (dev, ino) from disk into minode.INODE;
 
-          enter minode into cacheList;
-          return minode pointer;
-       }*/
+        enter minode into cacheList;
+        return minode pointer;
+    }*/
     if (freeList) {
         mip      = freeList;
         freeList = freeList->next;
@@ -123,22 +113,28 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
     return mip;
 }
 
-int searchCacheList() {
+/**********************************************************************
+ * search cache
+ */
+size_t searchCacheList() {
     MINODE *curr = freeList;
 
     while (curr->shareCount > 0) {
         if (curr->shareCount == 0) {
             hits++;
-            return curr;
+            return (size_t)curr;
         }
         curr = curr->next;
     }
-    return curr;
+    return (size_t)curr;
 }
 
+/**********************************************************************
+ * add to cache
+ */
 void insertCacheList(MINODE *mip) {
     MINODE *curr = cacheList;
-    if (mip->shareCount = 0 && mip->cacheCount <= curr->cacheCount) {
+    if ((mip->shareCount = 0) && (mip->cacheCount <= curr->cacheCount)) {
         mip->next = curr;
         cacheList = mip;
         return;
@@ -158,10 +154,13 @@ void insertCacheList(MINODE *mip) {
     mip->next  = curr;
 }
 
-int iput(MINODE *mip)  // release a mip
+/**********************************************************************
+ * put inode
+ */
+void iput(MINODE *mip)  // release a mip
 {
     INODE *ip;
-    char   buf[BLKSIZE];
+    char   buf[BLOCK_SIZE];
     int    block, offset;
     /*******************
    1.  if (mip==0)                return;
@@ -188,8 +187,12 @@ int iput(MINODE *mip)  // release a mip
     *ip = mip->INODE;
     put_block(mip->dev, block, buf);
     mip->shareCount = 0;
+    return;
 }
 
+/**********************************************************************
+ * search mip by name
+ */
 int search(MINODE *mip, char *name) {
     /******************
     search mip->INODE data blocks for name:
@@ -197,7 +200,7 @@ int search(MINODE *mip, char *name) {
     else       return 0;
     ******************/
     int   i;
-    char *cp, temp[256], sbuf[BLKSIZE];
+    char *cp, temp[256], sbuf[BLOCK_SIZE];
     DIR  *dp;
     for (i = 0; i < 12; i++) {  // search DIR direct blocks only
         if (mip->INODE.i_block[i] == 0)
@@ -205,7 +208,7 @@ int search(MINODE *mip, char *name) {
         get_block(mip->dev, mip->INODE.i_block[i], sbuf);
         dp = (DIR *)sbuf;
         cp = sbuf;
-        while (cp < sbuf + BLKSIZE) {
+        while (cp < sbuf + BLOCK_SIZE) {
             strncpy(temp, dp->name, dp->name_len);
             temp[dp->name_len] = 0;
             printf("%8d%8d%8u %s\n",
@@ -224,6 +227,9 @@ int search(MINODE *mip, char *name) {
     return 0;
 }
 
+/**********************************************************************
+ * search by pathname
+ */
 MINODE *path2inode(char *pathname) {
     /*******************
     return minode pointer of pathname;
@@ -234,7 +240,7 @@ MINODE *path2inode(char *pathname) {
     MINODE *mip;
     int     i, ino;
     if (strcmp(pathname, "/") == 0) {
-        return 2;
+        return root;
         // return root ino=2
     }
     if (pathname[0] == '/')
@@ -246,8 +252,8 @@ MINODE *path2inode(char *pathname) {
     mip->shareCount++;
     // in order to iput(mip) later
     tokenize(pathname);
-    // assume: name[ ], nname are globals
-    for (i = 0; i < nname; i++) {
+    // assume: name[ ], count_name are globals
+    for (i = 0; i < count_name; i++) {
         // search for each component string
         if (!S_ISDIR(mip->INODE.i_mode)) {  // check DIR type
             printf("%s is not a directory\n", name[i]);
@@ -266,9 +272,14 @@ MINODE *path2inode(char *pathname) {
         // switch to new minode
     }
     iput(mip);
-    return ino;
+    // return the mip with ino=ino
+    /*return ino;*/
+    return mip;
 }
 
+/**********************************************************************
+ * search for ino by pathname
+ */
 int findmyname(MINODE *pip, int myino, char myname[]) {
     /****************
     pip points to parent DIR minode:
@@ -276,7 +287,7 @@ int findmyname(MINODE *pip, int myino, char myname[]) {
     copy name string into myname[256]
     ******************/
     int   i;
-    char *cp, temp[256], sbuf[BLKSIZE];
+    char *cp, /*temp[256],*/ sbuf[BLOCK_SIZE];
     DIR  *dp;
     for (i = 0; i < 12; i++) {  // search DIR direct blocks only
         if (pip->INODE.i_block[i] == 0)
@@ -284,7 +295,7 @@ int findmyname(MINODE *pip, int myino, char myname[]) {
         get_block(pip->dev, pip->INODE.i_block[i], sbuf);
         dp = (DIR *)sbuf;
         cp = sbuf;
-        while (cp < sbuf + BLKSIZE) {
+        while (cp < sbuf + BLOCK_SIZE) {
             if (dp->inode == myino) {
                 printf("found %d : iname = %s\n", myino, dp->name);
                 strcpy(myname, dp->name);
@@ -298,6 +309,9 @@ int findmyname(MINODE *pip, int myino, char myname[]) {
     return 0;
 }
 
+/**********************************************************************
+ * search for ino by pathname
+ */
 int findino(MINODE *mip, int *myino) {
     /*****************
     mip points at a DIR minode
@@ -305,4 +319,6 @@ int findino(MINODE *mip, int *myino) {
     get myino of .
     return parent_ino of ..
     *******************/
+    // placeholder return
+    return EXIT_SUCCESS;
 }

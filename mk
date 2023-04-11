@@ -1,3 +1,3 @@
 rm a.out
-cc src/main.c
+gcc -Wall src/main.c
 a.out

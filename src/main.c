@@ -1,89 +1,131 @@
 #include "../hdr/type.h"
 #include <stdlib.h>
 
-/********** globals **************/
-PROC  proc[NPROC];
-PROC *running;
-
-MINODE  minode[NMINODE];  // in memory INODES: count=64
-MINODE *freeList;         // free minodes list
-MINODE *cacheList;        // cached minodes list
-
-MINODE *root;  // root minode pointer
-
-OFT oft[NOFT];  // for level-2 only
-
-char  gline[256];  // global line hold token strings of pathname
-char *name[64];    // token string pointers
-int   nname;       // number of token strings
-
-int ninodes, nblocks;                // ninodes, nblocks from SUPER block
-int bmap, imap, inodes_start, iblk;  // bitmap, inodes block numbers
-
-int  fd, dev;
-char cmd[16], pathname[128], parameter[128];
-int  requests, hits;
-
-// start up files
+/**********************************************************************
+ * start up files
+ **********************************************************************/
 #include "cd_ls_pwd.c"
 #include "util.c"
-/*#include "globals.c"*/
+/*#include "globals.c"*/  // included in cd_ls_pwd
 
-/**
- * Initialize the FS.
+/**********************************************************************
+ * function signatures
+ **********************************************************************/
+int init();
+int show_dir(MINODE *mip);
+int hit_ratio();
+int quit();
+
+/**********************************************************************
+ * INITiALIZE the FS.
  */
 int init() {
-    int i, j;
     /**
-     * initialize (in-memory) minodes into a freeList.
+     * initialize (in-memory) inodes into a freeList.
      * creates a linked list of free minodes.
      */
-    for (i = 0; i < NMINODE; i++) {
+    for (int i = 0; i < NUM_MINODE; i++) {
         MINODE *mip = &minode[i];
         mip->dev = mip->ino = 0;
         mip->id             = i;
         mip->next           = &minode[i + 1];
     }
-    minode[NMINODE - 1].next = 0;
-    freeList                 = &minode[0];  // free minodes list
-
-    cacheList = 0;  // cacheList = 0
-
-    /**
-     * sets all open file to free.
-     */
-    for (i = 0; i < NOFT; i++)
-        oft[i].shareCount = 0;  // all oft are FREE
+    minode[NUM_MINODE - 1].next = 0;
+    freeList                    = &minode[0];  // free minodes list
+    cacheList                   = 0;           // cacheList = 0
 
     /**
-     * intialize all processes. We have only 2 processes.
-     * P1 is always SUPER user then?
+     * set all oft to FREE.
      */
-    for (i = 0; i < NPROC; i++) {  // initialize procs
+    for (int i = 0; i < NUM_OFT; i++)
+        oft[i].shareCount = 0;
+
+    /**
+     * intialize all procs.
+     * We have only 2 processes. P1 is always SUPER user then?
+     */
+    for (int i = 0; i < NUM_PROC; i++) {
         PROC *p = &proc[i];
         p->uid = p->gid = i;      // uid=0 for SUPER user
-        p->pid          = i + 1;  // pid = 1,2,..., NPROC-1
+        p->pid          = i + 1;  // pid = 1,2,..., NUM_PROC-1
 
         // for each process, open all file descriptors
-        for (j = 0; j < NFD; j++)
+        for (int j = 0; j < NUM_FD; j++)
             p->fd[j] = 0;  // open file descritors are 0
     }
 
     running  = &proc[0];  // P1 is running
     requests = hits = 0;  // for hit_ratio of minodes cache
+
+    // placeholder return
+    return EXIT_SUCCESS;
 }
 
-/**
- * default disk device
+/**********************************************************************
+ * show_dir
  */
-char *disk = "diskimage";
+int show_dir(MINODE *mip) {
+    // show contents of mip DIR: same as in LAB5
+    INODE *ip = &(mip->INODE);
+    char   sbuf[BLOCK_SIZE], temp[256];
+    DIR   *d_ptr;
+    char  *cp;
 
-/**
+    // ASSUME only one data block i_block[0]
+    // YOU SHOULD print i_block[0] number here
+    printf("i_block[0]=%d", ip->i_block[0]);
+    get_block(dev, ip->i_block[0], sbuf);
+
+    d_ptr = (DIR *)sbuf;
+    cp    = sbuf;
+
+    while (cp < (sbuf + BLOCK_SIZE)) {
+        strncpy(temp, d_ptr->name, d_ptr->name_len);
+        temp[d_ptr->name_len] = 0;
+
+        printf("%4d %4d %4d %s\n",
+               d_ptr->inode,
+               d_ptr->rec_len,
+               d_ptr->name_len,
+               temp);
+
+        cp += d_ptr->rec_len;
+        d_ptr = (DIR *)cp;
+    }
+    // placeholder return
+    return EXIT_SUCCESS;
+}
+
+/**********************************************************************
+ * get cache hit ratio
+ */
+int hit_ratio() {
+    // print cacheList;
+    // compute and print hit_ratio
+    return 100 * hits / requests;
+}
+
+/**********************************************************************
+ * quit FS
+ */
+int quit() {
+    MINODE *mip = cacheList;
+    while (mip) {
+        if (mip->shareCount) {
+            mip->shareCount = 1;
+            iput(mip);  // write INODE back if modified
+        }
+        mip = mip->next;
+    }
+    exit(EXIT_SUCCESS);
+}
+
+/**********************************************************************
  * MAIN ENTRY
  */
 int main(int argc, char *argv[]) {
     char line[128];
-    char buf[BLKSIZE];
+    char buf[BLOCK_SIZE];
 
     /**
      * calls init() to set up FS
@@ -91,6 +133,8 @@ int main(int argc, char *argv[]) {
     init();
 
     /**
+     * open and check dev
+     *
      * https://man7.org/linux/man-pages/man2/open.2.html
      */
     fd = dev = open(disk, O_RDWR);
@@ -103,21 +147,21 @@ int main(int argc, char *argv[]) {
     /**
      * get super block of dev
      */
-    get_block(dev, SUPERBLOCK, buf);
+    get_block(dev, SUPER_BLOCK, buf);
     SUPER *sp = (SUPER *)buf;  // you should check s_magic for EXT2 FS
-    if (sp->s_magic != 0xEF53) {
+    if (sp->s_magic != MAGIC_EXT2) {
         printf("NOT an EXT2 FS\n");
         exit(EXIT_FAILURE);
     }
 
-    ninodes = sp->s_inodes_count;
-    nblocks = sp->s_blocks_count;
-    printf("ninodes=%d  nblocks=%d\n", ninodes, nblocks);
+    count_inodes = sp->s_inodes_count;
+    count_blocks = sp->s_blocks_count;
+    printf("count_inodes=%d  count_blocks=%d\n", count_inodes, count_blocks);
 
     /**
      * get group descriptor
      */
-    get_block(dev, GDBLOCK, buf);
+    get_block(dev, GD_BLOCK, buf);
     GD *gp = (GD *)buf;
 
     bmap = gp->bg_block_bitmap;
@@ -180,58 +224,12 @@ int main(int argc, char *argv[]) {
             pwd();
 
         if (strcmp(cmd, "show") == 0)
-            show_dir();
+            show_dir(mip);
         if (strcmp(cmd, "hits") == 0)
             hit_ratio();
         if (strcmp(cmd, "exit") == 0)
             quit();
     }
-}
-
-int show_dir(MINODE *mip) {
-    // show contents of mip DIR: same as in LAB5
-    INODE *ip = &(mip->INODE);
-    char   sbuf[BLKSIZE], temp[256];
-    DIR   *dp;
-    char  *cp;
-
-    // ASSUME only one data block i_block[0]
-    // YOU SHOULD print i_block[0] number here
-    printf("i_block[0]=%d", ip->i_block[0]);
-    get_block(dev, ip->i_block[0], sbuf);
-
-    dp = (DIR *)sbuf;
-    cp = sbuf;
-
-    while (cp < sbuf + BLKSIZE) {
-        strncpy(temp, dp->name, dp->name_len);
-        temp[dp->name_len] = 0;
-
-        printf("%4d %4d %4d %s\n",
-               dp->inode,
-               dp->rec_len,
-               dp->name_len,
-               temp);
-
-        cp += dp->rec_len;
-        dp = (DIR *)cp;
-    }
-}
-
-int hit_ratio() {
-    // print cacheList;
-    // compute and print hit_ratio
-    return 100 * hits / requests;
-}
-
-int quit() {
-    MINODE *mip = cacheList;
-    while (mip) {
-        if (mip->shareCount) {
-            mip->shareCount = 1;
-            iput(mip);  // write INODE back if modified
-        }
-        mip = mip->next;
-    }
-    exit(EXIT_SUCCESS);
+    // placeholder return
+    return EXIT_SUCCESS;
 }
