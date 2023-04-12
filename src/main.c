@@ -217,14 +217,20 @@ int main(int argc, char *argv[]) {
     /*set_root();*/
     //not running properly
     printf("\t> START DEBUG\n");
-    root         = iget(dev, ROOT_INODE);
+    MINODE *l_root = root; PROC *l_running = running;
+    l_root         = iget(dev, ROOT_INODE);
+    root = l_root;
+    l_running->cwd = iget(dev, ROOT_INODE);
+    running = l_running;
     printf("\t> END DEBUG\n");
     /*running->cwd = iget(dev, ROOT_INODE);*/
     
 
     while (RUNNING) {
+        l_root = root;
+        l_running = running;
         printf("\n=============================================================\n");
-        printf("> P%d running. . .\n", running->pid);
+        printf("> P%d running. . .\n", l_running->pid);
         pathname[0] = parameter[0] = 0;
 
         printf("> enter command [cd|ls|pwd|exit] : ");
@@ -242,13 +248,15 @@ int main(int argc, char *argv[]) {
         if (strcmp(cmd, "cd") == 0)
             cd(pathname);
         if (strcmp(cmd, "pwd") == 0)
-            pwd(running->cwd);
+            pwd(l_running->cwd);
         if (strcmp(cmd, "show") == 0)
             show_dir(root);
         if (strcmp(cmd, "hits") == 0)
             hit_ratio();
         if (strcmp(cmd, "exit") == 0)
             quit();
+        root = l_root;
+        running = l_running;
     }
     // placeholder return
     return EXIT_SUCCESS;

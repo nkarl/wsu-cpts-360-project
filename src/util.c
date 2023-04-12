@@ -49,7 +49,7 @@ void print_mip(MINODE *mip) {
 MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
 {
     printf("\t >> ENTER iget()\n");
-    MINODE *mip;
+    MINODE *mip, *l_cacheList = cacheList, *l_freeList = freeList;
     /*MTABLE *mp;*/  // not yet needed for level 1
     INODE *ip;
     int    block, offset;
@@ -65,7 +65,7 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
         inc minode's shareCount by 1;
         return minode pointer;
     }*/
-    mip = cacheList;
+    mip = l_cacheList;
     while (mip) {
         if (mip->shareCount && (mip->dev == dev) && (mip->ino == ino)) {  // if exists at least one ref and ...
             mip->cacheCount++;
@@ -89,13 +89,13 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
         return minode pointer;
     }*/
     printf("\t >> BEFORE if (freeList).\n");
-    if (freeList) {
-        printf("\t >> ENTERED if (freeList).\n");
+    if (l_freeList) {
+        printf("\t >> ENTERED if (l_freeList).\n");
         /*
          * if there is a free minode, load inode with given ino into it.
          */
-        mip      = freeList;
-        freeList = freeList->next;
+        mip      = l_freeList;
+        l_freeList = l_freeList->next;
 
         mip->dev        = dev;
         mip->ino        = ino;
