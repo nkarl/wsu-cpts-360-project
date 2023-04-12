@@ -76,7 +76,8 @@ int ls() {
  * pwd
  */
 int rpwd(MINODE *wd) {
-    if (wd == root) return EXIT_SUCCESS;
+    MINODE *temp_root = root;
+    if (wd == temp_root) return EXIT_SUCCESS;
 
     MINODE *mip = wd;
     INODE  *ip  = &(mip->INODE);

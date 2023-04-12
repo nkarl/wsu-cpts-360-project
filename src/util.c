@@ -112,8 +112,8 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
         /*
          * THiS IS BROKEN.
          * TODO: CHECK WHY
-         * insertCacheList(mip);
          * */
+         insertCacheList(mip);
         return mip;
     }
     printf("\t >> DONE checking in freeList.\n");
@@ -159,6 +159,13 @@ size_t searchCacheList() {
  */
 void insertCacheList(MINODE *mip) {
     MINODE *curr = cacheList;
+    if (!curr) {
+        cacheList = mip;
+        mip->next = 0;
+        return;
+    }
+
+
     if ((mip->shareCount = 0) && (mip->cacheCount <= curr->cacheCount)) {
         mip->next = curr;
         cacheList = mip;
@@ -166,7 +173,7 @@ void insertCacheList(MINODE *mip) {
     }
 
     MINODE *prev = curr;
-    while (mip->cacheCount > curr->cacheCount) {
+    while (prev->cacheCount >= curr->cacheCount) {
         prev = curr;
         curr = curr->next;
     }
