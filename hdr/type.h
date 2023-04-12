@@ -70,7 +70,7 @@ typedef struct proc {
 typedef struct mtable {
     int            dev;                         // device number; 0 for FREE
     int            count_inodes, count_blocks;  // from superblock
-    int            free_inodes, free_blocks;    // from superblock and GD
+    int            free_inodes,  free_blocks;   // from SUPER and GD
     int            bmap, imap;                  // from group descriptor
     int            iblock;                      // inodes start block
     struct minode *mntDirPtr;                   // mount point DIR pointer

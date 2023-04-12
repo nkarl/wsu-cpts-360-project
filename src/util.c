@@ -31,11 +31,24 @@ int tokenize(char *pathname) {
     return EXIT_SUCCESS;
 }
 
+void print_mip(MINODE *mip) {
+    if (mip) {
+        printf("\t\t\t> mip->INODE=%ld\n", (size_t)&mip->INODE);
+        printf("\t\t\t> mip->dev=%d  mip->ino=%d\n", mip->dev, mip->ino);
+        printf("\t\t\t> mip->cacheCount=%d\n", mip->cacheCount);
+        printf("\t\t\t> mip->shareCount=%d\n", mip->shareCount);
+        printf("\t\t\t> mip->modified=%d\n", mip->modified);
+        printf("\t\t\t> mip->id=%d\n", mip->id);
+        printf("\t\t\t> mip->next=%ld\n", (size_t)mip->next);
+    }
+}
+
 /**********************************************************************
  * return a pointer to some minode in dev with given ino.
  */
 MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
 {
+    printf("\t >> ENTER iget()\n");
     MINODE *mip;
     /*MTABLE *mp;*/  // not yet needed for level 1
     INODE *ip;
@@ -62,6 +75,7 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
         }
         mip = mip->next;
     }
+    printf("\t >> DONE checking in cacheList.\n");
     // needed (dev, ino) NOT in cacheList.
 
     /* 2.
@@ -74,7 +88,12 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
         enter minode into cacheList;
         return minode pointer;
     }*/
+    printf("\t >> BEFORE if (freeList).\n");
     if (freeList) {
+        printf("\t >> ENTERED if (freeList).\n");
+        /*
+         * if there is a free minode, load inode with given ino into it.
+         */
         mip      = freeList;
         freeList = freeList->next;
 
@@ -90,9 +109,14 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
 
         ip         = (INODE *)buf + offset;
         mip->INODE = *ip;
-        insertCacheList(mip);
+        /*
+         * THiS IS BROKEN.
+         * TODO: CHECK WHY
+         * insertCacheList(mip);
+         * */
         return mip;
     }
+    printf("\t >> DONE checking in freeList.\n");
 
     // freeList empty case:
     /*
@@ -131,6 +155,7 @@ size_t searchCacheList() {
 
 /**********************************************************************
  * add to cache
+ * TODO: THIS IS BROKEN. DEBUG.
  */
 void insertCacheList(MINODE *mip) {
     MINODE *curr = cacheList;
@@ -181,6 +206,7 @@ void iput(MINODE *mip)  // release a mip
 
     block  = (mip->ino - 1) / 8 + iblk;
     offset = (mip->ino - 1) % 8;
+    printf("block=%d offset=%d", block, offset);
 
     get_block(mip->dev, block, buf);
     ip  = (INODE *)buf + offset;

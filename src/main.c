@@ -17,6 +17,26 @@ int show_dir(MINODE *mip);
 int hit_ratio();
 int quit();
 
+void set_root() {
+    char buf[BLOCK_SIZE];
+    MINODE *mip = freeList;  // remove minode[0] from freeList
+    freeList    = freeList->next;
+    cacheList   = mip;  // enter minode[0] in cacheList
+
+    // get root INODE
+    get_block(dev, iblk, buf);
+    INODE *ip  = (INODE *)buf + 1;  // #2 INODE
+    mip->INODE = *ip;               // copy into mip->INODE
+
+    mip->cacheCount = 1;
+    mip->shareCount = 2;  // for root AND CWD
+    mip->modified   = 0;
+
+    root = mip;  // root points at #2 INODE in minode[0]
+    printf(">\t set P1's CWD to root.\n");
+    running->cwd = root;  // CWD = root
+}
+
 /**********************************************************************
  * INITiALIZE the FS.
  */
@@ -168,28 +188,24 @@ int main(int argc, char *argv[]) {
     printf(">\t bmap=%d  imap=%d  iblk=%d\n", bmap, imap, iblk);
 
     // HERE =========================================================
-    MINODE *mip = freeList;  // remove minode[0] from freeList
-    freeList    = freeList->next;
-    cacheList   = mip;  // enter minode[0] in cacheList
+    /*MINODE *mip = freeList;  // remove minode[0] from freeList*/
+    /*freeList    = freeList->next;*/
+    /*cacheList   = mip;  // enter minode[0] in cacheList*/
 
-    // get root INODE
-    get_block(dev, iblk, buf);
-    INODE *ip  = (INODE *)buf + 1;  // #2 INODE
-    mip->INODE = *ip;               // copy into mip->INODE
+    /*// get root INODE*/
+    /*get_block(dev, iblk, buf);*/
+    /*INODE *ip  = (INODE *)buf + 1;  // #2 INODE*/
+    /*mip->INODE = *ip;               // copy into mip->INODE*/
 
-    mip->cacheCount = 1;
-    mip->shareCount = 2;  // for root AND CWD
-    mip->modified   = 0;
+    /*mip->cacheCount = 1;*/
+    /*mip->shareCount = 2;  // for root AND CWD*/
+    /*mip->modified   = 0;*/
 
-    root = mip;  // root points at #2 INODE in minode[0]
-
-    printf(">\t set P1's CWD to root.\n");
-    running->cwd = root;  // CWD = root
-    /*
-    // not running properly
-    root         = iget(dev, ROOT_INODE);
-    running->cwd = iget(dev, ROOT_INODE);
-    */
+    /*root = mip;  // root points at #2 INODE in minode[0]*/
+    /*printf(">\t set P1's CWD to root.\n");*/
+    /*running->cwd = root;  // CWD = root*/
+    /*print_mip(mip);*/
+    
     // END_HERE =====================================================
 
     /********* write code for iget()/iput() in util.c **********
@@ -198,6 +214,13 @@ int main(int argc, char *argv[]) {
      root         = iget(dev, 2);
      running->cwd = iget(dev, 2);
     **********************************************************/
+    /*set_root();*/
+    //not running properly
+    printf("\t> START DEBUG\n");
+    root         = iget(dev, ROOT_INODE);
+    printf("\t> END DEBUG\n");
+    /*running->cwd = iget(dev, ROOT_INODE);*/
+    
 
     while (RUNNING) {
         printf("\n=============================================================\n");
@@ -221,7 +244,7 @@ int main(int argc, char *argv[]) {
         if (strcmp(cmd, "pwd") == 0)
             pwd(running->cwd);
         if (strcmp(cmd, "show") == 0)
-            show_dir(mip);
+            show_dir(root);
         if (strcmp(cmd, "hits") == 0)
             hit_ratio();
         if (strcmp(cmd, "exit") == 0)
