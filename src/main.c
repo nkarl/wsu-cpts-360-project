@@ -228,6 +228,9 @@ int main(int argc, char *argv[]) {
      running->cwd = iget(dev, 2);
     **********************************************************/
     /*set_root();*/
+    /*
+     * TODO: need to create_dir for root node
+     */
     MINODE *l_root    = root;
     PROC   *l_running = running;
     l_root            = iget(dev, ROOT_INODE);
