@@ -152,13 +152,15 @@ int main(int argc, char *argv[]) {
      * calls init() to set up FS
      */
     init();
+    printf("START UP\n");
+    printf("-----------------------------------------------------\n");
 
     /**
      * open and check dev
      * https://man7.org/linux/man-pages/man2/open.2.html
      */
     fd = dev = open(disk, O_RDWR);
-    printf(">\t dev = %d\n", dev);  // YOU should check dev value: exit if < 0
+    printf("\t> dev = %d\n", dev);  // YOU should check dev value: exit if < 0
     if (dev < 0) {
         return error("ERROR: NOT a valid device.\n", EXIT_FAILURE);
     }
@@ -171,10 +173,11 @@ int main(int argc, char *argv[]) {
     if (sp->s_magic != MAGIC_EXT2) {
         return error("ERROR: NOT an EXT2 FS.\n", EXIT_FAILURE);
     }
+    printf("\t> check: superblock magic == %x\n", sp->s_magic);
 
     amount_inodes = sp->s_inodes_count;
     amount_blocks = sp->s_blocks_count;
-    printf(">\t amount_inodes=%d  amount_blocks=%d\n", amount_inodes, amount_blocks);
+    printf("\t> amount_inodes=%d  amount_blocks=%d\n", amount_inodes, amount_blocks);
 
     /**
      * get group descriptor
@@ -185,7 +188,7 @@ int main(int argc, char *argv[]) {
     bmap = gp->bg_block_bitmap;
     imap = gp->bg_inode_bitmap;
     iblk = inodes_start = gp->bg_inode_table;  // sets the start of inode table
-    printf(">\t bmap=%d  imap=%d  iblk=%d\n", bmap, imap, iblk);
+    printf("\t> bmap=%d  imap=%d  iblk=%d\n", bmap, imap, iblk);
 
     // HERE =========================================================
     /*MINODE *mip = freeList;  // remove minode[0] from freeList*/
@@ -215,15 +218,12 @@ int main(int argc, char *argv[]) {
      running->cwd = iget(dev, 2);
     **********************************************************/
     /*set_root();*/
-    //not running properly
-    printf("\t> START DEBUG\n");
     MINODE *l_root = root; PROC *l_running = running;
     l_root         = iget(dev, ROOT_INODE);
     root = l_root;
     l_running->cwd = iget(dev, ROOT_INODE);
     running = l_running;
-    printf("\t> END DEBUG\n");
-    /*running->cwd = iget(dev, ROOT_INODE);*/
+    printf("\t> root shareCount=%d", root->shareCount);
     
 
     while (RUNNING) {

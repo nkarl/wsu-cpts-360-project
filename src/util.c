@@ -23,10 +23,19 @@ int put_block(int dev, int blk, char buf[]) {
 }
 
 /**********************************************************************
- * tokenize
+ * tokenize pathname
  */
 int tokenize(char *pathname) {
     // tokenize pathname into n token strings in (global) gline[ ]
+    strcpy(gline, pathname);
+    char *s = strtok(gline, "/");
+    int   i = 0;
+    do {
+        name[i++]   = s;
+        amount_name = i;
+        s           = strtok(0, "/");
+    } while (s);
+
     // placeholder return
     return EXIT_SUCCESS;
 }
@@ -94,7 +103,7 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
         /*
          * if there is a free minode, load inode with given ino into it.
          */
-        mip      = l_freeList;
+        mip        = l_freeList;
         l_freeList = l_freeList->next;
 
         mip->dev        = dev;
@@ -109,11 +118,7 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
 
         ip         = (INODE *)buf + offset;
         mip->INODE = *ip;
-        /*
-         * THiS IS BROKEN.
-         * TODO: CHECK WHY
-         * */
-         insertCacheList(mip);
+        insertCacheList(mip);
         return mip;
     }
     printf("\t >> DONE checking in freeList.\n");
@@ -128,13 +133,15 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
          it's better to order cacheList by INCREASING cacheCount,
          with smaller cacheCount in front ==> search cacheList
     ************/
-    mip             = (MINODE *)searchCacheList();
-    mip->dev        = dev;
-    mip->ino        = ino;
-    mip->shareCount = 1;
-    mip->cacheCount = 1;
-    mip->modified   = 0;
-    return mip;
+    mip = (MINODE *)searchCacheList();
+    if (mip) {
+        mip->dev        = dev;
+        mip->ino        = ino;
+        mip->shareCount = 1;
+        mip->cacheCount = 1;
+        mip->modified   = 0;
+        return mip;
+    }
 }
 
 /**********************************************************************
@@ -164,7 +171,6 @@ void insertCacheList(MINODE *mip) {
         mip->next = 0;
         return;
     }
-
 
     if ((mip->shareCount = 0) && (mip->cacheCount <= curr->cacheCount)) {
         mip->next = curr;
