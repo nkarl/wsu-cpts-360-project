@@ -17,6 +17,7 @@ int cd(char *pathname) {
     printf("cd: Under Construction\n");
 
     // write YOUR code for cd
+    MINODE *mip = path2inode(pathname);
 
     /* remember to set bmap and imap for the new cwd */
 
@@ -54,27 +55,26 @@ void print_i_mode(INODE *ip) {
 }
 
 void print_d_entry_stats(INODE *ip, DIR *e) {
-    char linkname[256];
-    char ftime[64];
-    char fname[256];
+    char   linkname[256];
+    char   ftime[64];
+    char   fname[256];
     time_t t = ip->i_ctime;
     strcpy(fname, e->name);
     printf("%4d ", ip->i_links_count);  // link count
-    printf("%4d ", ip->i_gid);           // gid
-    printf("%4d ", ip->i_uid);           // uid
+    printf("%4d ", ip->i_gid);          // gid
+    printf("%4d ", ip->i_uid);          // uid
     printf("   ");
     // print time
-    strcpy(ftime, ctime(&t));  // print time in calendar form ftime[strlen(ftime)-1] = 0; // kill \n at end
-    ftime[strlen(ftime) - 1] = 0;        // removes the \n
-    printf("%s ", ftime);                // prints the time
-    printf("%8ld ", ip->i_size);         // file size
+    strcpy(ftime, ctime(&t));      // print time in calendar form ftime[strlen(ftime)-1] = 0; // kill \n at end
+    ftime[strlen(ftime) - 1] = 0;  // removes the \n
+    printf("%s ", ftime);          // prints the time
+    printf("%8d ", ip->i_size);    // file size
     // print name
     if ((ip->i_mode & 0xF000) == 0xA000) {
         int _ = readlink(fname, linkname, 256);
         printf(" -> %s", linkname);  // print linked name }
     }
 }
-
 
 /**********************************************************************
  * ls_dir
@@ -92,7 +92,6 @@ int ls_dir(MINODE *pip) {
     dp = (DIR *)sbuf;
     cp = sbuf;
 
-    struct stat st;
     while (cp < sbuf + BLOCK_SIZE) {
         strncpy(name, dp->name, dp->name_len);
         name[dp->name_len] = 0;

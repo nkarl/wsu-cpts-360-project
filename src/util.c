@@ -282,12 +282,14 @@ MINODE *path2inode(char *pathname) {
         return root;
         // return root ino=2
     }
-    if (pathname[0] == '/')
-        mip = root;
     // if absolute pathname: start from root
-    else
-        mip = running->cwd;
+    if (pathname[0] == '/') {
+        mip = root;
+    }
     // if relative pathname: start from CWD
+    else {
+        mip = running->cwd;
+    }
     mip->shareCount++;
     // in order to iput(mip) later
     tokenize(pathname);
@@ -420,6 +422,47 @@ int ialloc(int dev) {
             decFreeInodes(dev);
 
             printf("ialloc : ino=%d\n", i + 1);
+            return i + 1;
+        }
+    }
+    return 0;
+}
+
+/**********************************************************************
+ * decrease the amount of free blocks from dev
+ */
+void decFreeBlocks(int dev) {
+    char buf[BLOCK_SIZE];
+
+    // dec free blocks count by 1 in SUPER and GD
+    get_block(dev, 1, buf);
+    SUPER *sp = (SUPER *)buf;
+    sp->s_free_blocks_count--;
+    put_block(dev, 1, buf);
+
+    get_block(dev, 2, buf);
+    GD *gp = (GD *)buf;
+    gp->bg_free_blocks_count--;
+    put_block(dev, 2, buf);
+}
+
+/**********************************************************************
+ * allocate a block number from bmap block
+ */
+int balloc(int dev) {
+    char buf[BLOCK_SIZE];
+
+    // read inode_bitmap block
+    get_block(dev, bmap, buf);
+
+    for (int i = 0; i < amount_blocks; i++) {
+        if (tst_bit(buf, i) == 0) {
+            set_bit(buf, i);
+            put_block(dev, bmap, buf);
+
+            decFreeBlocks(dev);
+
+            printf("balloc : ino=%d\n", i + 1);
             return i + 1;
         }
     }

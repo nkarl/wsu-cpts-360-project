@@ -18,7 +18,7 @@ int hit_ratio();
 int quit();
 
 void set_root() {
-    char buf[BLOCK_SIZE];
+    char    buf[BLOCK_SIZE];
     MINODE *mip = freeList;  // remove minode[0] from freeList
     freeList    = freeList->next;
     cacheList   = mip;  // enter minode[0] in cacheList
@@ -94,7 +94,7 @@ int show_dir(MINODE *mip) {
 
     // ASSUME only one data block i_block[0]
     // YOU SHOULD print i_block[0] number here
-    printf("i_block[0]=%d", ip->i_block[0]);
+    printf("i_block[0]=%d\n", ip->i_block[0]);
     get_block(dev, ip->i_block[0], sbuf);
 
     d_ptr = (DIR *)sbuf;
@@ -122,8 +122,18 @@ int show_dir(MINODE *mip) {
  */
 int hit_ratio() {
     // print cacheList;
+    MINODE *mip = cacheList;
+    INODE *ip; int i = 1;
+    while (mip) {
+        ip = &(mip->INODE);
+        printf("c%d[%d %d]s%d ->", mip->cacheCount, dev, mip->ino, mip->shareCount);
+        mip = mip->next;
+    }
+    printf("%p\n", mip);
+
     // compute and print hit_ratio
-    return 100 * hits / requests;
+    int result = 100 * hits / requests;
+    printf("requests=%d  hits=%d  hit_ratio=%d%%", requests, hits, result);
 }
 
 /**********************************************************************
@@ -208,7 +218,7 @@ int main(int argc, char *argv[]) {
     /*printf(">\t set P1's CWD to root.\n");*/
     /*running->cwd = root;  // CWD = root*/
     /*print_mip(mip);*/
-    
+
     // END_HERE =====================================================
 
     /********* write code for iget()/iput() in util.c **********
@@ -218,16 +228,16 @@ int main(int argc, char *argv[]) {
      running->cwd = iget(dev, 2);
     **********************************************************/
     /*set_root();*/
-    MINODE *l_root = root; PROC *l_running = running;
-    l_root         = iget(dev, ROOT_INODE);
-    root = l_root;
-    l_running->cwd = iget(dev, ROOT_INODE);
-    running = l_running;
+    MINODE *l_root    = root;
+    PROC   *l_running = running;
+    l_root            = iget(dev, ROOT_INODE);
+    root              = l_root;
+    l_running->cwd    = iget(dev, ROOT_INODE);
+    running           = l_running;
     printf("\t> root shareCount=%d", root->shareCount);
-    
 
     while (RUNNING) {
-        l_root = root;
+        l_root    = root;
         l_running = running;
         printf("\n=============================================================\n");
         printf("> P%d running. . .\n", l_running->pid);
@@ -255,7 +265,7 @@ int main(int argc, char *argv[]) {
             hit_ratio();
         if (strcmp(cmd, "exit") == 0)
             quit();
-        root = l_root;
+        root    = l_root;
         running = l_running;
     }
     // placeholder return
