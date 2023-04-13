@@ -174,7 +174,8 @@ int main(int argc, char *argv[]) {
      * https://man7.org/linux/man-pages/man2/open.2.html
      */
     /*fd = dev = open(disk, O_RDWR);*/
-    fd = dev = (strcmp(argv[1], "new") == 0) ? open(disk, O_RDWR) : open(new_disk, O_RDWR);
+    fd = dev = (argc == 1) ? open(disk, O_RDWR) : open(new_disk, O_RDWR);
+
     printf("\t> dev = %d\n", dev);  // YOU should check dev value: exit if < 0
     if (dev < 0) {
         return error("ERROR: NOT a valid device.\n", EXIT_FAILURE);

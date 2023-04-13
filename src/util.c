@@ -187,7 +187,10 @@ void insertCacheList(MINODE *mip) {
     }
 
     MINODE *prev = curr;
-    while (prev->cacheCount >= curr->cacheCount) {
+    /*
+     * BUG: segfault
+     */
+    while (prev->cacheCount > curr->cacheCount) {
         prev = curr;
         curr = curr->next;
     }

@@ -18,6 +18,7 @@ int cd(char *pathname) {
 
     // write YOUR code for cd
     MINODE *mip = path2inode(pathname);
+    print_mip(mip);
 
     /* remember to set bmap and imap for the new cwd */
 
