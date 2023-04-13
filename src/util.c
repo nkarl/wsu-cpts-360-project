@@ -195,12 +195,15 @@ void insertCacheList(MINODE *mip) {
         curr = curr->next;
     }
 
-    while (mip->cacheCount == curr->cacheCount && mip->shareCount > curr->shareCount) {
+    // while (mip->cacheCount == curr->cacheCount && mip->shareCount > curr->shareCount) {
+    while (mip->shareCount > curr->shareCount) {
         prev = curr;
         curr = curr->next;
     }
-    prev->next = mip;
-    mip->next  = curr;
+    if (curr->ino != mip->ino) {
+        prev->next = mip;
+        mip->next  = curr;
+    }
 }
 
 /**********************************************************************
@@ -312,6 +315,9 @@ MINODE *path2inode(char *pathname) {
 
     if (strcmp(pathname, "..") == 0) {
         /* find the parent inode and return its ino */
+        for (int i = 0; i < amount_name; ++i) {
+            printf("name[%d]=%s\n", i, name[i]);
+        }
     }
 
     // assume: name[ ], amount_name are globals

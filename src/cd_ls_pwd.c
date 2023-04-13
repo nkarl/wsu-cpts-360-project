@@ -14,14 +14,25 @@ extern MINODE *root;
  * cd
  */
 int cd(char *pathname) {
-    printf("cd: Under Construction\n");
-
-    // write YOUR code for cd
-    MINODE *mip = path2inode(pathname);
-    print_mip(mip);
-
-    /* remember to set bmap and imap for the new cwd */
-
+    MINODE      *mip;
+    unsigned int ino;
+    if (strlen(pathname) == 0 || strcmp(pathname, "/") == 0) {
+        ino = root->ino;
+        mip = iget(dev, ino);
+    }
+    else {
+        mip = path2inode(pathname);
+    }
+    // load inode
+    // mip = iget(dev, ino);
+    // check if dir
+    if (!S_ISDIR(mip->INODE.i_mode)) {
+        printf("Error: End of path is not a directory\n");
+        iput(mip);
+        return 0;
+    }
+    iput(running->cwd);
+    running->cwd = mip;  // new minode to mip
     // placeholder return
     return EXIT_SUCCESS;
 }

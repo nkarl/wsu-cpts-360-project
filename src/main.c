@@ -168,6 +168,7 @@ int main(int argc, char *argv[]) {
     init();
     printf("START UP\n");
     printf("-----------------------------------------------------\n");
+    printf("I am literally too dumb for this class.\n");
 
     /**
      * open and check dev
@@ -275,8 +276,6 @@ int main(int argc, char *argv[]) {
             hit_ratio();
         if (strcmp(cmd, "exit") == 0)
             quit();
-        root    = l_root;
-        running = l_running;
     }
     // placeholder return
     return EXIT_SUCCESS;
