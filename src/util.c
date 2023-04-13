@@ -293,6 +293,11 @@ MINODE *path2inode(char *pathname) {
         return root;
         // return root ino=2
     }
+
+    if (strcmp(pathname, ".") == 0) {
+        return running->cwd;
+    }
+
     // if absolute pathname: start from root
     if (pathname[0] == '/') {
         mip = root;
@@ -304,6 +309,11 @@ MINODE *path2inode(char *pathname) {
     mip->shareCount++;
     // in order to iput(mip) later
     tokenize(pathname);
+
+    if (strcmp(pathname, "..") == 0) {
+        /* find the parent inode and return its ino */
+    }
+
     // assume: name[ ], amount_name are globals
     for (i = 0; i < amount_name; i++) {
         // search for each component string
