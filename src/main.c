@@ -246,7 +246,7 @@ int main(int argc, char *argv[]) {
         printf("> P%d running. . .\n", l_running->pid);
         pathname[0] = parameter[0] = 0;
 
-        printf("> enter command [cd|ls|pwd|exit] : ");
+        printf("> enter command [cd|ls|pwd|show|hits|exit] : ");
         fgets(line, 128, stdin);
         line[strlen(line) - 1] = 0;  // kill \n at end
 
