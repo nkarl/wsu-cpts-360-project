@@ -1,5 +1,7 @@
 #include "../hdr/type.h"
 
+void    print_i_mode(INODE *ip);
+void    print_d_entry_stats(INODE *ip, DIR *dp);
 int     get_block(int dev, int blk, char buf[]);
 int     put_block(int dev, int blk, char buf[]);
 MINODE *iget(int dev, int ino);  // return minode pointer of (dev, ino)

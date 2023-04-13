@@ -123,7 +123,8 @@ int show_dir(MINODE *mip) {
 int hit_ratio() {
     // print cacheList;
     MINODE *mip = cacheList;
-    INODE *ip; int i = 1;
+    INODE  *ip;
+    int     i = 1;
     while (mip) {
         ip = &(mip->INODE);
         printf("c%d[%d %d]s%d ->", mip->cacheCount, dev, mip->ino, mip->shareCount);
@@ -158,6 +159,9 @@ int main(int argc, char *argv[]) {
     char line[128];
     char buf[BLOCK_SIZE];
 
+    for (int i = 0; *argv; ++i) {
+        printf("argv[%d]=%s\n", i, *argv++);
+    }
     /**
      * calls init() to set up FS
      */
@@ -169,7 +173,8 @@ int main(int argc, char *argv[]) {
      * open and check dev
      * https://man7.org/linux/man-pages/man2/open.2.html
      */
-    fd = dev = open(disk, O_RDWR);
+    /*fd = dev = open(disk, O_RDWR);*/
+    fd = dev = (strcmp(argv[1], "new") == 0) ? open(disk, O_RDWR) : open(new_disk, O_RDWR);
     printf("\t> dev = %d\n", dev);  // YOU should check dev value: exit if < 0
     if (dev < 0) {
         return error("ERROR: NOT a valid device.\n", EXIT_FAILURE);
@@ -238,6 +243,7 @@ int main(int argc, char *argv[]) {
     l_running->cwd    = iget(dev, ROOT_INODE);
     running           = l_running;
     printf("\t> root shareCount=%d", root->shareCount);
+    print_mip(running->cwd);
 
     while (RUNNING) {
         l_root    = root;

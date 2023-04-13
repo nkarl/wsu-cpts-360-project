@@ -32,6 +32,29 @@ int ls_file(MINODE *mip, char *name) {
     printf("ls_file: under construction\n");
 
     // use mip->INODE to ls_file
+    char   sbuf[BLOCK_SIZE];
+    DIR   *dp;
+    char  *cp;
+    INODE *ip = &(mip->INODE);
+
+    printf("simple ls_dir()\n");
+
+    /*get_block(dev, pip->INODE.i_block[0], sbuf);*/
+    get_block(dev, ip->i_block[0], sbuf);
+    dp = (DIR *)sbuf;
+    cp = sbuf;
+
+    while (cp < sbuf + BLOCK_SIZE) {
+        strncpy(name, dp->name, dp->name_len);
+        name[dp->name_len] = 0;
+        print_i_mode(ip);
+        print_d_entry_stats(ip, dp);
+        printf("\t");
+        printf("%s\n", name);
+
+        cp += dp->rec_len;
+        dp = (DIR *)cp;
+    }
     // placeholder return
     return EXIT_SUCCESS;
 }
@@ -86,11 +109,19 @@ int ls_dir(MINODE *pip) {
     INODE *ip = &(pip->INODE);
 
     printf("simple ls_dir()\n");
-
     /*get_block(dev, pip->INODE.i_block[0], sbuf);*/
     get_block(dev, ip->i_block[0], sbuf);
     dp = (DIR *)sbuf;
     cp = sbuf;
+
+    if (strcmp(dp->name, "/") == 0) {
+        name[dp->name_len] = 0;
+        print_i_mode(ip);
+        print_d_entry_stats(ip, dp);
+        printf("\t");
+        printf("%s\n", name);
+        return EXIT_SUCCESS;
+    }
 
     while (cp < sbuf + BLOCK_SIZE) {
         strncpy(name, dp->name, dp->name_len);
@@ -113,6 +144,13 @@ int ls_dir(MINODE *pip) {
 int ls() {
     MINODE *mip = running->cwd;
 
+    if (running->cwd) {
+        ls_dir(mip);
+        return 0;
+    }
+    /*if (((mip->INODE.i_mode) & 0040000) != 0040000) {*/
+    /*ls_file(mip);*/
+    /*}*/
     ls_dir(mip);
     iput(mip);
     // placeholder return

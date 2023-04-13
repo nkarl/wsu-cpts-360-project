@@ -40,8 +40,16 @@ int tokenize(char *pathname) {
     return EXIT_SUCCESS;
 }
 
+void prin_ip(INODE *ip) {
+    if (ip) {
+        printf("\n");
+        printf("\t\t\t> ip->INODE=%ld\n", (size_t)&ip->i_gid);
+    }
+}
+
 void print_mip(MINODE *mip) {
     if (mip) {
+        printf("\n");
         printf("\t\t\t> mip->INODE=%ld\n", (size_t)&mip->INODE);
         printf("\t\t\t> mip->dev=%d  mip->ino=%d\n", mip->dev, mip->ino);
         printf("\t\t\t> mip->cacheCount=%d\n", mip->cacheCount);

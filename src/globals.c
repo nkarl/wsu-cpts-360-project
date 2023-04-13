@@ -25,3 +25,4 @@ int  requests, hits;
  * default disk device
  */
 char *disk = "diskimage";
+char *new_disk = "new_diskimage";
