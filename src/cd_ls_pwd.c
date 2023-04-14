@@ -19,9 +19,14 @@ int cd(char *pathname) {
     if (strlen(pathname) == 0 || strcmp(pathname, "/") == 0) {
         ino = root->ino;
         mip = iget(dev, ino);
+        running->cwd = root;
     }
     else {
         mip = path2inode(pathname);
+    }
+    if (!mip) {
+        printf("\t> ERROR: in cd(pathname=%s). Invalid pathname (does not exist).\n", pathname);
+        return EXIT_FAILURE;
     }
     // load inode
     // mip = iget(dev, ino);
