@@ -31,7 +31,7 @@ int cd(char *pathname) {
         iput(mip);
         return 0;
     }
-    iput(running->cwd);
+    /*iput(running->cwd);*/ // BUG: why is this here?
     running->cwd = mip;  // new minode to mip
     // placeholder return
     return EXIT_SUCCESS;
