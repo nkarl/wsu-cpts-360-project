@@ -87,8 +87,8 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
     mip = l_cacheList;
     while (mip) {
         if (mip->shareCount
-                && (mip->dev == dev)
-                && (mip->ino == ino)) {  // if exists at least one ref and ...
+            && (mip->dev == dev)
+            && (mip->ino == ino)) {  // if exists at least one ref and ...
             ++(mip->cacheCount);
             ++(mip->shareCount);
             ++hits;
@@ -97,8 +97,8 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
         mip = mip->next;
     }
     printf("\t >> DONE checking in cacheList.\n");
+
     // needed (dev, ino) NOT in cacheList.
-    mip = mialloc();
     /* 2.
     if (freeList NOT empty){
         remove a minode from freeList;
@@ -109,27 +109,25 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
         enter minode into cacheList;
         return minode pointer;
     }*/
-    printf("\t >> BEFORE if (freeList).\n");
-    if (l_freeList) {
+    mip = mialloc();
+    if (mip) {
         printf("\t >> ENTERED if (l_freeList).\n");
         /*
          * if there is a free minode, load inode with given ino into it.
          */
-        mip        = l_freeList;
-        l_freeList = l_freeList->next;
-
-        mip->dev        = dev;
-        mip->ino        = ino;
-        mip->cacheCount = 1;
-        mip->shareCount = 1;
-        mip->modified   = 0;
+        mip->dev = dev;
+        mip->ino = ino;
 
         block  = (ino - 1) / 8 + iblk;
         offset = (ino - 1) % 8;
-        get_block(dev, block, buf);
 
+        get_block(dev, block, buf);
         ip         = (INODE *)buf + offset;
-        mip->INODE = *ip;
+        mip->INODE = *ip;  // copy inode to mip.INODE
+        // initialize mip
+        mip->cacheCount = 1;
+        mip->shareCount = 1;
+        mip->modified   = 0;
         insertCacheList(mip);
         return mip;
     }
@@ -157,57 +155,48 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
 }
 
 /**********************************************************************
- * search cache
+ * search cache for 
  */
-size_t searchCacheList() {
-    MINODE *curr = freeList;
-
-    while (curr->shareCount > 0) {
-        if (curr->shareCount == 0) {
-            hits++;
-            return (size_t)curr;
+MINODE *searchCacheList() {
+    MINODE *cache = cacheList;
+    MINODE *prev = cache;
+    while (cache) {
+        if (cache->shareCount == 0) {
+            ++hits;
+            return cache;
         }
-        curr = curr->next;
+        prev = cache;
+        cache = cache->next;
     }
-    return (size_t)curr;
+    return 0; // return NULL if found none available in cache.
 }
 
 /**********************************************************************
  * add to cache
- * TODO: THIS IS BROKEN. DEBUG.
  */
 void insertCacheList(MINODE *mip) {
-    MINODE *curr = cacheList;
-    if (!curr) {
+    MINODE *cache = cacheList;
+    if (!cache) {  // empty cache
         cacheList = mip;
         mip->next = 0;
         return;
     }
 
-    if ((mip->shareCount = 0) && (mip->cacheCount <= curr->cacheCount)) {
-        mip->next = curr;
+    // insert at front of cache if cacheCount is smallest
+    if (mip->cacheCount <= cache->cacheCount) {
+        mip->next = cache;
         cacheList = mip;
         return;
     }
 
-    MINODE *prev = curr;
-    /*
-     * BUG: segfault
-     */
-    while (prev->cacheCount > curr->cacheCount) {
-        prev = curr;
-        curr = curr->next;
+    // otherwise, search cache and insert in order.
+    MINODE *prev = cache;
+    while (mip->cacheCount > cache->cacheCount) {
+        prev  = cache;
+        cache = cache->next;
     }
-
-    // while (mip->cacheCount == curr->cacheCount && mip->shareCount > curr->shareCount) {
-    while (mip->shareCount > curr->shareCount) {
-        prev = curr;
-        curr = curr->next;
-    }
-    if (curr->ino != mip->ino) {
-        prev->next = mip;
-        mip->next  = curr;
-    }
+    prev->next = mip;
+    mip->next = cache;
 }
 
 /**********************************************************************
@@ -253,21 +242,21 @@ void iput(MINODE *mip)  // release a mip
  * allocate a FREE minode for use
  */
 MINODE *mialloc() {
-    MINODE *mip = freeList;
+    MINODE *mip  = freeList;
     MINODE *prev = mip;
     while (mip) {
         if (mip->shareCount == 0) {
             mip->shareCount = 1;
         }
         prev = mip;
-        mip = mip->next;
+        mip  = mip->next;
     }
     /*for (int i = 0; i < NUM_MINODE; ++i) {*/
-        /*MINODE *mp = &minode[i];*/
-        /*if (mp->shareCount == 0) {*/
-            /*mp->shareCount = 1;*/
-            /*return mp;*/
-        /*}*/
+    /*MINODE *mp = &minode[i];*/
+    /*if (mp->shareCount == 0) {*/
+    /*mp->shareCount = 1;*/
+    /*return mp;*/
+    /*}*/
     /*}*/
     printf("FS panic : out of minodes\n");
     return 0;
@@ -280,7 +269,7 @@ void midalloc(MINODE *mip) {
     mip->shareCount = 0;
     // enqueue the freed minode to the front of the freeList.
     mip->next = freeList;
-    freeList = mip;
+    freeList  = mip;
 }
 
 /**********************************************************************
