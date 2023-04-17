@@ -237,7 +237,6 @@ void iput(MINODE *mip)  // release a mip
     *ip = mip->INODE;
     put_block(mip->dev, block, buf);
     midalloc(mip);
-    return;
 }
 
 /**********************************************************************
@@ -246,7 +245,7 @@ void iput(MINODE *mip)  // release a mip
 MINODE *mialloc() {
     if (!freeList) return 0;
     MINODE *mip  = freeList;
-    freeList = mip->next;
+    freeList     = mip->next;
     return mip;
     /*MINODE *prev = mip;*/
     /*while (mip) {*/
@@ -291,7 +290,7 @@ int search(MINODE *mip, char *name) {
     for (int i = 0; i < 12; i++) {  // search DIR direct blocks only
         printf("\t> i=%d\n", i);
         if (mip->INODE.i_block[i] == 0)
-            return EXIT_SUCCESS;
+            return 0;
         get_block(mip->dev, mip->INODE.i_block[i], sbuf);
         dp = (DIR *)sbuf;
         cp = sbuf;
@@ -311,7 +310,7 @@ int search(MINODE *mip, char *name) {
             dp = (DIR *)cp;
         }
     }
-    return EXIT_SUCCESS;
+    return 0; // returns 0 if not found.
 }
 
 /**********************************************************************
