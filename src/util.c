@@ -1,5 +1,6 @@
 #include "../hdr/util.h"
 #include "globals.c"
+#include <stdlib.h>
 
 /**********************************************************************
  * get_block
@@ -244,16 +245,16 @@ void iput(MINODE *mip)  // release a mip
  */
 MINODE *mialloc() {
     if (!freeList) return 0;
-    MINODE *mip  = freeList;
-    freeList     = mip->next;
+    MINODE *mip = freeList;
+    freeList    = mip->next;
     return mip;
     /*MINODE *prev = mip;*/
     /*while (mip) {*/
-        /*if (mip->shareCount == 0) {*/
-            /*mip->shareCount = 1;*/
-        /*}*/
-        /*prev = mip;*/
-        /*mip  = mip->next;*/
+    /*if (mip->shareCount == 0) {*/
+    /*mip->shareCount = 1;*/
+    /*}*/
+    /*prev = mip;*/
+    /*mip  = mip->next;*/
     /*}*/
     /*for (int i = 0; i < NUM_MINODE; ++i) {*/
     /*MINODE *mp = &minode[i];*/
@@ -310,13 +311,13 @@ int search(MINODE *mip, char *name) {
             dp = (DIR *)cp;
         }
     }
-    return 0; // returns 0 if not found.
+    return 0;  // returns 0 if not found.
 }
 
 /**********************************************************************
  * search by pathname
  */
-MINODE *path2inode(char *pathname) {
+MINODE *path2inode(char *pathname) {  // same as getino in the book
     /*******************
     return minode pointer of pathname;
     return 0 if pathname invalid;
@@ -326,41 +327,44 @@ MINODE *path2inode(char *pathname) {
     MINODE *mip;
     int     i, ino;
     if (strcmp(pathname, "/") == 0) {
-        return root;
         // return root ino=2
-    }
-
-    if (strcmp(pathname, ".") == 0) {
-        return running->cwd;
-    }
-
-    // if absolute pathname: start from root
-    if (pathname[0] == '/') {
-        mip = root;
-    }
-    // if relative pathname: start from CWD
-    else {
-        mip = running->cwd;
-    }
-    mip->shareCount++;
-    // in order to iput(mip) later
-    tokenize(pathname);
-
-    if (strcmp(pathname, "..") == 0) {
-        /* find the parent inode and return its ino */
-        for (int i = 0; i < amount_name; ++i) {
-            printf("name[%d]=%s\n", i, name[i]);
+        if (root->ino != ROOT_INODE) {
+            printf("\t> ERROR: in path2ino(%s). root->ino != 2.\n", pathname);
+            exit(EXIT_FAILURE);
         }
+        return root;
     }
 
-    // assume: name[ ], amount_name are globals
+    /*if (strcmp(pathname, ".") == 0) {*/
+        /*return running->cwd;*/
+    /*}*/
+
+    if (pathname[0] == '/') // if absolute pathname: start from root
+        mip = root;
+    else                    // if relative pathname: start from CWD
+        mip = running->cwd;
+    mip->shareCount++;
+    tokenize(pathname);     // in order to iput(mip) later
+
+    /*if (strcmp(pathname, "..") == 0) {*/
+        /*[> find the parent inode and return its ino <]*/
+        /*for (int i = 0; i < amount_name; ++i) {*/
+            /*printf("name[%d]=%s\n", i, name[i]);*/
+        /*}*/
+    /*}*/
+
+    /*
+     * assume: name[ ] & amount_name is in globals.c
+     * search for each component string
+     */
     for (i = 0; i < amount_name; i++) {
-        // search for each component string
         if (!S_ISDIR(mip->INODE.i_mode)) {  // check DIR type
             printf("%s is not a directory\n", name[i]);
             iput(mip);
             return 0;
         }
+        
+        // if S_ISDIR, find its ino
         ino = search(mip, name[i]);
         if (!ino) {
             printf("no such component name %s\n", name[i]);
@@ -373,9 +377,7 @@ MINODE *path2inode(char *pathname) {
         // switch to new minode
     }
     iput(mip);
-    // return the mip with ino=ino
-    /*return ino;*/
-    return mip;
+    return mip;     // return the mip with ino=ino
 }
 
 /**********************************************************************

@@ -11,7 +11,7 @@ extern MINODE *root;
 // cd_ls_pwd.c file
 
 /**********************************************************************
- * cd
+ * cd: iget the NEW dir, but iput the OLD dir
  */
 int cd(char *pathname) {
     MINODE      *mip;
