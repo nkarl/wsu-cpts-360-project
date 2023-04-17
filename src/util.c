@@ -244,15 +244,18 @@ void iput(MINODE *mip)  // release a mip
  * allocate a FREE minode for use
  */
 MINODE *mialloc() {
+    if (!freeList) return 0;
     MINODE *mip  = freeList;
-    MINODE *prev = mip;
-    while (mip) {
-        if (mip->shareCount == 0) {
-            mip->shareCount = 1;
-        }
-        prev = mip;
-        mip  = mip->next;
-    }
+    freeList = mip->next;
+    return mip;
+    /*MINODE *prev = mip;*/
+    /*while (mip) {*/
+        /*if (mip->shareCount == 0) {*/
+            /*mip->shareCount = 1;*/
+        /*}*/
+        /*prev = mip;*/
+        /*mip  = mip->next;*/
+    /*}*/
     /*for (int i = 0; i < NUM_MINODE; ++i) {*/
     /*MINODE *mp = &minode[i];*/
     /*if (mp->shareCount == 0) {*/
@@ -260,8 +263,8 @@ MINODE *mialloc() {
     /*return mp;*/
     /*}*/
     /*}*/
-    printf("FS panic : out of minodes\n");
-    return 0;
+    /*printf("FS panic : out of minodes\n");*/
+    /*return 0;*/
 }
 
 /**********************************************************************
