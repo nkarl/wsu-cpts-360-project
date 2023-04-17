@@ -111,7 +111,6 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
     }*/
     mip = mialloc();
     if (mip) {
-        printf("\t >> ENTERED if (l_freeList).\n");
         /*
          * if there is a free minode, load inode with given ino into it.
          */
@@ -145,30 +144,33 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
     ************/
     mip = (MINODE *)searchCacheList();
     if (mip) {
-        mip->dev        = dev;
-        mip->ino        = ino;
+        mip->dev = dev;
+        mip->ino = ino;
+
         mip->shareCount = 1;
         mip->cacheCount = 1;
         mip->modified   = 0;
+
         return mip;
     }
+    printf("\t >> DONE checking in cacheList for a free minode (shareCount == 0).\n");
 }
 
 /**********************************************************************
- * search cache for 
+ * search cache for
  */
 MINODE *searchCacheList() {
     MINODE *cache = cacheList;
-    MINODE *prev = cache;
+    MINODE *prev  = cache;
     while (cache) {
         if (cache->shareCount == 0) {
             ++hits;
             return cache;
         }
-        prev = cache;
+        prev  = cache;
         cache = cache->next;
     }
-    return 0; // return NULL if found none available in cache.
+    return 0;  // return NULL if found none available in cache.
 }
 
 /**********************************************************************
@@ -196,7 +198,7 @@ void insertCacheList(MINODE *mip) {
         cache = cache->next;
     }
     prev->next = mip;
-    mip->next = cache;
+    mip->next  = cache;
 }
 
 /**********************************************************************
