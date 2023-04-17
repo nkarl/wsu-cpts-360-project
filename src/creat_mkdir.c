@@ -16,7 +16,7 @@ int mk_dir(char *pathname) {
 
         WARNING: strtok(), dirname(), basename() destroy pathname
     */
-    char buf[512] = {0};
+    char  buf[512] = {0};
     char *parent, *child;
     strcpy(buf, pathname);
     parent = dirname(buf);
@@ -39,30 +39,57 @@ int mk_dir(char *pathname) {
     /*
     3. Verify : (1). parent INODE is a DIR (HOW?)   AND
                 (2). child does NOT exists in the parent directory (HOW?);
+    */
+    if (!S_ISDIR(pip->INODE.i_mode)) {  // check DIR type
+        printf("parent: %s is not a directory\n", parent);
+        return 0;
+    }
 
+    int child_ino = search(pip, child);
+    if (!child_ino) {
+        printf("child: %s does not exist in parent: %s\n", parent, child);
+        return 0;
+    }
+    /*
     4. call mymkdir(pip, child);
+    */
 
+    /*
     5. inc parent inodes's links count by 1;
         touch its atime, i.e. atime = time(0L), mark it modified
-
+    */
+    pip->INODE.i_atime = time(0L);
+    pip->modified = 1;
+    
+    /*
     6. iput(pip);
-*/
+    */
+    iput(pip);
+    return 0;
 }
 
 int my_mk_dir(MINODE *pip, char *name) {
     /*
     1. pip points at the parent minode[] of "/a/b", name is a string "c"
+    */
 
+    /*
     2. allocate an inode and a disk block for the new directory;
             ino = ialloc(dev);
             bno = balloc(dev);
        Don't WORK IN THE DARK: PRINT OUT THESE NUMBERS!!!
+    */
 
+    /*
     3. MINODE *mip = iget(dev, ino); //load inode into a minode[] (in order to
        wirte contents to the INODE in memory.
+    */
 
+    /*
     4. Write contents to mip->INODE to make it a DIR INODE. Mark it modified;
+    */
 
+    /*
     5. iput(mip); which writes the new INODE out to disk.
 
       // C CODE of (3), (4) and (5):
@@ -84,9 +111,11 @@ int my_mk_dir(MINODE *pip, char *name) {
 
       mip->modified = 1;            // mark minode MODIFIED
       iput(mip);                    // write INODE to disk
+    */
 
 
-    //***** create data block for new DIR containing . and .. entries ******
+    /*
+    // ***** create data block for new DIR containing . and .. entries ******
     6. Write . and .. entries to a buf[ ] of BLKSIZE
 
        | entry .     | entry ..     |                                       |
@@ -95,7 +124,9 @@ int my_mk_dir(MINODE *pip, char *name) {
        ----------------------------------------------------------------------
 
        Then, write buf[ ] to the disk block bno;
+    */
 
+    /*
     7. Finally, enter name ENTRY into parent's directory by
                 enter_child(pip, ino, name);
     */
