@@ -9,6 +9,13 @@ int     tokenize(char *pathname);
 MINODE *searchCacheList();
 void    insertCacheList(MINODE *mip);
 void    iput(MINODE *mip);  // release a mip
+
+int     ialloc(int dev);
+void    decFreeInodes(int dev);
+
+int     balloc(int dev);
+void    decFreeBlocks(int dev);
+
 MINODE *mialloc();
 void    midalloc(MINODE *);
 int     search(MINODE *mip, char *name);

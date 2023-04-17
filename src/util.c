@@ -336,21 +336,21 @@ MINODE *path2inode(char *pathname) {  // same as getino in the book
     }
 
     /*if (strcmp(pathname, ".") == 0) {*/
-        /*return running->cwd;*/
+    /*return running->cwd;*/
     /*}*/
 
-    if (pathname[0] == '/') // if absolute pathname: start from root
+    if (pathname[0] == '/')  // if absolute pathname: start from root
         mip = root;
-    else                    // if relative pathname: start from CWD
+    else  // if relative pathname: start from CWD
         mip = running->cwd;
     mip->shareCount++;
-    tokenize(pathname);     // in order to iput(mip) later
+    tokenize(pathname);  // in order to iput(mip) later
 
     /*if (strcmp(pathname, "..") == 0) {*/
-        /*[> find the parent inode and return its ino <]*/
-        /*for (int i = 0; i < amount_name; ++i) {*/
-            /*printf("name[%d]=%s\n", i, name[i]);*/
-        /*}*/
+    /*[> find the parent inode and return its ino <]*/
+    /*for (int i = 0; i < amount_name; ++i) {*/
+    /*printf("name[%d]=%s\n", i, name[i]);*/
+    /*}*/
     /*}*/
 
     /*
@@ -363,7 +363,7 @@ MINODE *path2inode(char *pathname) {  // same as getino in the book
             iput(mip);
             return 0;
         }
-        
+
         // if S_ISDIR, find its ino
         ino = search(mip, name[i]);
         if (!ino) {
@@ -377,7 +377,7 @@ MINODE *path2inode(char *pathname) {  // same as getino in the book
         // switch to new minode
     }
     iput(mip);
-    return mip;     // return the mip with ino=ino
+    return mip;  // return the mip with ino=ino
 }
 
 /**********************************************************************
