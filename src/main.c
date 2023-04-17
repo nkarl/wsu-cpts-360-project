@@ -176,7 +176,6 @@ int main(int argc, char *argv[]) {
      */
     /*fd = dev = open(disk, O_RDWR);*/
     fd = dev = (argc == 1) ? open(disk, O_RDWR) : open(new_disk, O_RDWR);
-
     printf("\t> dev = %d\n", dev);  // YOU should check dev value: exit if < 0
     if (dev < 0) {
         return error("ERROR: NOT a valid device.\n", EXIT_FAILURE);
