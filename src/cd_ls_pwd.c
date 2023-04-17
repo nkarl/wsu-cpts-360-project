@@ -12,34 +12,36 @@ extern MINODE *root;
 
 /**********************************************************************
  * cd: iget the NEW dir, but iput the OLD dir
+ * would have been nice if root can be made const;
+ * would save a lot of time debugging.
  */
-int cd(char *pathname) {
+void cd(char *pathname) {
     MINODE      *mip;
     unsigned int ino;
     if (strlen(pathname) == 0 || strcmp(pathname, "/") == 0) {
-        ino = root->ino;
-        mip = iget(dev, ino);
+        /*ino          = root->ino;*/
+        /*mip          = iget(dev, ino);*/
         running->cwd = root;
+        return;
     }
     else {
         mip = path2inode(pathname);
-    }
-    if (!mip) {
-        printf("\t> ERROR: in cd(pathname=%s). Invalid pathname (does not exist).\n", pathname);
-        return EXIT_FAILURE;
+        if (!mip) {
+            printf("\t> ERROR: in cd(pathname=%s). Invalid pathname (does not exist).\n", pathname);
+            return;
+        }
     }
     // load inode
     // mip = iget(dev, ino);
     // check if dir
-    if (!S_ISDIR(mip->INODE.i_mode)) {
-        printf("Error: End of path is not a directory\n");
-        iput(mip);
-        return 0;
+    if (S_ISDIR(mip->INODE.i_mode)) {
+        iput(running->cwd);
+        running->cwd = mip;      // new minode to mip
+        return;
     }
-    /*iput(running->cwd);*/ // BUG: why is this here?
-    running->cwd = mip;  // new minode to mip
-    // placeholder return
-    return EXIT_SUCCESS;
+    printf("Error: End of path is not a directory\n");
+    iput(mip);
+    return;
 }
 
 /**********************************************************************

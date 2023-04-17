@@ -4,7 +4,7 @@
 #include "../hdr/type.h"
 #include <stdlib.h>
 
-int cd();
+void cd(char *);
 int ls_file(MINODE *mip, char *name);
 int ls_dir(MINODE *pip);
 int ls();
