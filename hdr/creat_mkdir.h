@@ -4,6 +4,7 @@
 #include "../hdr/type.h"
 #include <stdlib.h>
 
-void my_mkdir(char *);
+void mk_dir(char *pathname);
+int  my_mk_dir(MINODE *pip, char *name);
 
 #endif
