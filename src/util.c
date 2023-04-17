@@ -66,8 +66,10 @@ void print_mip(MINODE *mip) {
 MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
 {
     printf("\t >> ENTER iget()\n");
-    MINODE *mip, *l_cacheList = cacheList, *l_freeList = freeList;
-    /*MTABLE *mp;*/  // not yet needed for level 1
+    MINODE *mip,
+        *l_cacheList = cacheList,
+        *l_freeList  = freeList;
+    /*MTABLE *mp;*/  // not yet needed at the moment
     INODE *ip;
     int    block, offset;
     char   buf[BLOCK_SIZE];
@@ -84,17 +86,19 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
     }*/
     mip = l_cacheList;
     while (mip) {
-        if (mip->shareCount && (mip->dev == dev) && (mip->ino == ino)) {  // if exists at least one ref and ...
-            mip->cacheCount++;
-            mip->shareCount++;
-            hits++;
+        if (mip->shareCount
+                && (mip->dev == dev)
+                && (mip->ino == ino)) {  // if exists at least one ref and ...
+            ++(mip->cacheCount);
+            ++(mip->shareCount);
+            ++hits;
             return mip;
         }
         mip = mip->next;
     }
     printf("\t >> DONE checking in cacheList.\n");
     // needed (dev, ino) NOT in cacheList.
-
+    mip = mialloc();
     /* 2.
     if (freeList NOT empty){
         remove a minode from freeList;
@@ -227,20 +231,56 @@ void iput(MINODE *mip)  // release a mip
       // NOTE: minode still in cacheList;
       *****************/
     if (mip == 0) return;
+
     mip->shareCount--;
     if (mip->shareCount > 0) return;
     if (!mip->modified) return;
 
+    // gets block address in order to write INODE back to disk
     block  = (mip->ino - 1) / 8 + iblk;
     offset = (mip->ino - 1) % 8;
-    printf("block=%d offset=%d", block, offset);
+    printf("\t> iput(): block=%d offset=%d\n", block, offset);
 
     get_block(mip->dev, block, buf);
     ip  = (INODE *)buf + offset;
     *ip = mip->INODE;
     put_block(mip->dev, block, buf);
-    mip->shareCount = 0;
+    midalloc(mip);
     return;
+}
+
+/**********************************************************************
+ * allocate a FREE minode for use
+ */
+MINODE *mialloc() {
+    MINODE *mip = freeList;
+    MINODE *prev = mip;
+    while (mip) {
+        if (mip->shareCount == 0) {
+            mip->shareCount = 1;
+        }
+        prev = mip;
+        mip = mip->next;
+    }
+    /*for (int i = 0; i < NUM_MINODE; ++i) {*/
+        /*MINODE *mp = &minode[i];*/
+        /*if (mp->shareCount == 0) {*/
+            /*mp->shareCount = 1;*/
+            /*return mp;*/
+        /*}*/
+    /*}*/
+    printf("FS panic : out of minodes\n");
+    return 0;
+}
+
+/**********************************************************************
+ * release a used minode (and queue it back to freeList!)
+ */
+void midalloc(MINODE *mip) {
+    mip->shareCount = 0;
+    // enqueue the freed minode to the front of the freeList.
+    mip->next = freeList;
+    freeList = mip;
 }
 
 /**********************************************************************

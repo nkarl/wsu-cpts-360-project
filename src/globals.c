@@ -13,8 +13,8 @@ OFT     oft[NUM_OFT];                    // for level-2 only
 
 char    gline[256];                      // global line hold token strings of pathname
 char   *name[64];                        // token string pointers
-int     amount_name;                      // number of token strings
-int     amount_inodes, amount_blocks;      // ninodes, nblocks from SUPER block
+int     amount_name;                     // number of token strings
+int     amount_inodes, amount_blocks;    // ninodes, nblocks from SUPER block
 int     bmap, imap, inodes_start, iblk;  // bitmap, inodes block numbers
 
 int  fd, dev;

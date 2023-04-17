@@ -9,6 +9,8 @@ int     tokenize(char *pathname);
 size_t  searchCacheList();
 void    insertCacheList(MINODE *mip);
 void    iput(MINODE *mip);  // release a mip
+MINODE *mialloc();
+void    midalloc(MINODE *);
 int     search(MINODE *mip, char *name);
 MINODE *path2inode(char *pathname);
 int     findmyname(MINODE *pip, int myino, char myname[]);
