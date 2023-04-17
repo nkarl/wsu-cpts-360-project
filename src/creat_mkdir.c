@@ -8,19 +8,35 @@ extern int   fd, dev;
 
 extern MINODE *root;
 
-void mk_dir(char *pathname) {
+int mk_dir(char *pathname) {
     /*
     1. Let
         parent = dirname(pathname);   parent= "/a/b" OR "a/b"
         child  = basename(pathname);  child = "c"
 
         WARNING: strtok(), dirname(), basename() destroy pathname
+    */
+    char buf[512] = {0};
+    char *parent, *child;
+    strcpy(buf, pathname);
+    parent = dirname(buf);
+    strcpy(buf, pathname);
+    child = basename(buf);
+    printf("\t> dirname: %s \tbasename: %s\n", parent, child);
 
+    /*
     2. Get minode of parent:
 
         MINODE *pip = path2inode(parent);
         (print message if pip NULL; return -1 for error)
+    */
+    MINODE *pip = path2inode(parent);
+    if (!pip) {
+        printf("> ERROR: in mk_dir(%s), MINODE not found.\n", parent);
+        return -1;
+    }
 
+    /*
     3. Verify : (1). parent INODE is a DIR (HOW?)   AND
                 (2). child does NOT exists in the parent directory (HOW?);
 
