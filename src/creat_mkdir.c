@@ -71,7 +71,7 @@ int mk_dir(char *pathname) {
 /*
 1. pip points at the parent minode[] of "/a/b", name is a string "c"
 */
-int my_mk_dir(MINODE *pip, char *name) {
+int my_mk_dir(MINODE *pip, char *child_name) {
     int ino,
         bno;
     /*
@@ -159,8 +159,8 @@ int my_mk_dir(MINODE *pip, char *name) {
     dp->name[0]  = '.';
 
     // make parent entry ".."
-    int pino = pip->ino;
-    int blk  = bno;
+    int pino = pip->ino,
+        blk  = bno;
 
     cp = dbuf + 12;
     dp = (DIR *)cp;
@@ -175,37 +175,59 @@ int my_mk_dir(MINODE *pip, char *name) {
     7. Finally, enter name ENTRY into parent's directory by
                 enter_child(pip, ino, name);
     */
-    enter_child(pip, ino, name);
+    enter_child(pip, ino, child_name);
+
     return 0;
 }
 
-int enter_child(MINODE *pip, int ino, char *name) {
-    int NEED_LEN = 4 * ((8 + strlen(name) + 3) / 4);
-    int i;
+int enter_child(MINODE *pip, int ino, char *child_name) {
+    char buf[BLOCK_SIZE] = {0};
+    int  i,
+        NEED_LEN = 4 * ((8 + strlen(child_name) + 3) / 4);
+
+    // check for an empty direct block in parent.
     for (i = 0; i < 12; i++) {
         if (pip->INODE.i_block[i] == 0) break;
     }
-    char buf[BLOCK_SIZE] = {0};
+
     get_block(pip->dev, pip->INODE.i_block[i - 1], buf);
     DIR  *dp = (DIR *)buf;
     char *cp = buf;
 
-    int IDEAL_LEN = 4 * ((8 + dp->name_len + 3) / 4);
+    // go to the last record, and get the ideal length
     while (cp < buf + BLOCK_SIZE) {
         cp += dp->rec_len;
         dp = (DIR *)cp;
     }
+    int IDEAL_LEN = 4 * ((8 + dp->name_len + 3) / 4);
+
     int REMAIN = dp->rec_len - IDEAL_LEN;
     if (REMAIN >= NEED_LEN) {
         dp->rec_len = IDEAL_LEN;
-        cp += dp->rec_len;
+        cp += dp->rec_len;  // move up by rec_len, and
+        // create the new dir
         dp           = (DIR *)cp;
         dp->inode    = ino;
-        dp->name_len = strlen(name);
-        strncpy(dp->name, name, dp->name_len);
+        dp->name_len = strlen(child_name);
+        strncpy(dp->name, child_name, dp->name_len);
         dp->rec_len = REMAIN;
     }
-    else {
+    else {  // NO space in existing data block(s)
+        /*
+        Allocate a new data block; INC parent's isze by BLKSIZE;
+        Enter new entry as the first entry in the new data block with rec_len=BLKSIZE.
+
+          |-------------------- rlen = BLKSIZE -------------------------------------
+          |myino rlen nlen myname                                                  |
+          --------------------------------------------------------------------------
+        */
+        int bno = balloc(pip->dev);     // allocate new data block
+        dp->inode = ino;
+        dp->name_len = strlen(child_name);
+        strncpy(dp->name, child_name, dp->name_len);
+        dp->rec_len = BLOCK_SIZE;
+        // Write data block to disk;
+        put_block(pip->dev, bno, buf);
     }
     return 0;
 }
