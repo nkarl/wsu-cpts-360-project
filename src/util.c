@@ -248,23 +248,6 @@ MINODE *mialloc() {
     MINODE *mip = freeList;
     freeList    = mip->next;
     return mip;
-    /*MINODE *prev = mip;*/
-    /*while (mip) {*/
-    /*if (mip->shareCount == 0) {*/
-    /*mip->shareCount = 1;*/
-    /*}*/
-    /*prev = mip;*/
-    /*mip  = mip->next;*/
-    /*}*/
-    /*for (int i = 0; i < NUM_MINODE; ++i) {*/
-    /*MINODE *mp = &minode[i];*/
-    /*if (mp->shareCount == 0) {*/
-    /*mp->shareCount = 1;*/
-    /*return mp;*/
-    /*}*/
-    /*}*/
-    /*printf("FS panic : out of minodes\n");*/
-    /*return 0;*/
 }
 
 /**********************************************************************
@@ -286,24 +269,24 @@ int search(MINODE *mip, char *name) {
     if (found) return its inode number;
     else       return 0;
     ******************/
-    char *cp, temp[BLOCK_SIZE], sbuf[BLOCK_SIZE];
-    DIR  *dp;
-    for (int i = 0; i < 12; i++) {  // search DIR direct blocks only
-        printf("\t> i=%d\n", i);
-        if (mip->INODE.i_block[i] == 0)
-            return 0;
-        get_block(mip->dev, mip->INODE.i_block[i], sbuf);
+    char *cp,
+        sbuf[BLOCK_SIZE],
+        namebuf[BLOCK_SIZE];
+    DIR *dp;
+
+    for (int i = 0; i < 12; i++) {  // search the DIR's direct blocks for the name
+        int blk_num = mip->INODE.i_block[i];
+        if (blk_num == 0) return 0;
+
+        get_block(mip->dev, blk_num, sbuf);
         dp = (DIR *)sbuf;
         cp = sbuf;
         while (cp < sbuf + BLOCK_SIZE) {
-            strncpy(temp, dp->name, dp->name_len);
-            temp[dp->name_len] = 0;
-            printf("%8d%8d%8u %s\n",
-                   dp->inode,
-                   dp->rec_len,
-                   dp->name_len,
-                   temp);
-            if (strcmp(name, temp) == 0) {
+            strncpy(namebuf, dp->name, dp->name_len);
+            namebuf[dp->name_len] = 0;
+            printf("%8d%8d%8u %s\n", dp->inode, dp->rec_len, dp->name_len, namebuf);
+            // check if matching record's name
+            if (strcmp(name, namebuf) == 0) {
                 printf("found %s : inumber = %d\n", name, dp->inode);
                 return dp->inode;
             }
@@ -335,10 +318,6 @@ MINODE *path2inode(char *pathname) {  // same as getino in the book
         return root;
     }
 
-    /*if (strcmp(pathname, ".") == 0) {*/
-    /*return running->cwd;*/
-    /*}*/
-
     if (pathname[0] == '/')  // if absolute pathname: start from root
         mip = root;
     else  // if relative pathname: start from CWD
@@ -346,35 +325,25 @@ MINODE *path2inode(char *pathname) {  // same as getino in the book
     mip->shareCount++;
     tokenize(pathname);  // in order to iput(mip) later
 
-    /*if (strcmp(pathname, "..") == 0) {*/
-    /*[> find the parent inode and return its ino <]*/
-    /*for (int i = 0; i < amount_name; ++i) {*/
-    /*printf("name[%d]=%s\n", i, name[i]);*/
-    /*}*/
-    /*}*/
-
     /*
      * assume: name[ ] & amount_name is in globals.c
      * search for each component string
      */
     for (i = 0; i < amount_name; i++) {
-        if (!S_ISDIR(mip->INODE.i_mode)) {  // check DIR type
+        if (!S_ISDIR(mip->INODE.i_mode)) {  // check if it's a DIR type
             printf("%s is not a directory\n", name[i]);
             iput(mip);
             return 0;
         }
 
-        // if S_ISDIR, find its ino
-        ino = search(mip, name[i]);
+        ino = search(mip, name[i]);  // if DIR, find its ino
         if (!ino) {
             printf("no such component name %s\n", name[i]);
             iput(mip);
             return 0;
         }
-        iput(mip);
-        // release current minode
-        mip = iget(dev, ino);
-        // switch to new minode
+        iput(mip);             // release current minode
+        mip = iget(dev, ino);  // switch to new minode
     }
     iput(mip);
     return mip;  // return the mip with ino=ino

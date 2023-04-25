@@ -16,17 +16,16 @@ int mk_dir(char *pathname) {
 
         WARNING: strtok(), dirname(), basename() destroy pathname
     */
-    char  buf[512] = {0};
+    char  cbuf[512] = {0};
     char *parent, *child;
-    strcpy(buf, pathname);
-    parent = dirname(buf);
-    strcpy(buf, pathname);
-    child = basename(buf);
+    strcpy(cbuf, pathname);
+    parent = dirname(cbuf);
+    strcpy(cbuf, pathname);
+    child = basename(cbuf);
     printf("\t> dirname: %s \tbasename: %s\n", parent, child);
 
     /*
     2. Get minode of parent:
-
         MINODE *pip = path2inode(parent);
         (print message if pip NULL; return -1 for error)
     */
@@ -69,12 +68,12 @@ int mk_dir(char *pathname) {
     return 0;
 }
 
+/*
+1. pip points at the parent minode[] of "/a/b", name is a string "c"
+*/
 int my_mk_dir(MINODE *pip, char *name) {
-    /*
-    1. pip points at the parent minode[] of "/a/b", name is a string "c"
-    */
-
-    int ino, bno;
+    int ino,
+        bno;
     /*
     2. allocate an inode and a disk block for the new directory;
             ino = ialloc(dev);
@@ -166,7 +165,7 @@ int my_mk_dir(MINODE *pip, char *name) {
     cp = dbuf + 12;
     dp = (DIR *)cp;
 
-    dp->inode    = pip->no;
+    dp->inode    = pip->ino;
     dp->rec_len  = BLOCK_SIZE - 12;
     dp->name_len = 2;
     dp->name[0] = dp->name[1] = '.';
@@ -187,7 +186,7 @@ int enter_child(MINODE *pip, int ino, char *name) {
         if (pip->INODE.i_block[i] == 0) break;
     }
     char buf[BLOCK_SIZE] = {0};
-    get_block(pip->dev, pip->INODE.i_block[i-1], buf);
+    get_block(pip->dev, pip->INODE.i_block[i - 1], buf);
     DIR  *dp = (DIR *)buf;
     char *cp = buf;
 
@@ -200,13 +199,13 @@ int enter_child(MINODE *pip, int ino, char *name) {
     if (REMAIN >= NEED_LEN) {
         dp->rec_len = IDEAL_LEN;
         cp += dp->rec_len;
-        dp = (DIR *)cp;
-        dp->inode = ino;
+        dp           = (DIR *)cp;
+        dp->inode    = ino;
         dp->name_len = strlen(name);
         strncpy(dp->name, name, dp->name_len);
         dp->rec_len = REMAIN;
-    } else {
-
+    }
+    else {
     }
     return 0;
 }
