@@ -25,7 +25,7 @@ int put_block(int dev, int blk, char buf[]) {
 
 /**********************************************************************
  * tokenize pathname
- *
+ */
 int tokenize(char *pathname) {
     // tokenize pathname into n token strings in (global) gline[ ]
     strcpy(gline, pathname);

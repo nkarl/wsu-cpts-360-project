@@ -5,8 +5,9 @@
  * start up files
  **********************************************************************/
 #include "cd_ls_pwd.c"
+#include "creat_mkdir.c"
 #include "util.c"
-/*#include "globals.c"*/  // included in cd_ls_pwd
+/*#include "globals.c"  // included in cd_ls_pwd*/
 
 static const int RUNNING = 1;
 /**********************************************************************
@@ -98,7 +99,7 @@ int show_dir(MINODE *mip) {
     get_block(dev, ip->i_block[0], sbuf);
 
     dp = (DIR *)sbuf;
-    cp    = sbuf;
+    cp = sbuf;
 
     while (cp < (sbuf + BLOCK_SIZE)) {
         strncpy(temp, dp->name, dp->name_len);
@@ -244,7 +245,7 @@ int main(int argc, char *argv[]) {
     l_running->cwd    = iget(dev, ROOT_INODE);
     running           = l_running;
     printf("\t> root shareCount=%d", root->shareCount);
-    print_mip(running->cwd);
+    /*print_mip(running->cwd);*/
 
     while (RUNNING) {
         l_root    = root;
@@ -253,7 +254,7 @@ int main(int argc, char *argv[]) {
         printf("> P%d running. . .\n", l_running->pid);
         pathname[0] = parameter[0] = 0;
 
-        printf("> enter command [cd|ls|pwd|show|hits|exit] : ");
+        printf("> enter command [cd|ls|pwd|mkdir|show|hits|exit] : ");
         fgets(line, 128, stdin);
         line[strlen(line) - 1] = 0;  // kill \n at end
 
@@ -269,6 +270,8 @@ int main(int argc, char *argv[]) {
             cd(pathname);
         if (strcmp(cmd, "pwd") == 0)
             pwd(l_running->cwd);
+        if (strcmp(cmd, "mkdir") == 0)
+            /*mk_dir(pathname);*/
         if (strcmp(cmd, "show") == 0)
             show_dir(root);
         if (strcmp(cmd, "hits") == 0)
