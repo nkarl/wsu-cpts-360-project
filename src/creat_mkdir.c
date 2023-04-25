@@ -130,11 +130,12 @@ int my_mk_dir(MINODE *pip, char *name) {
 
     ip->i_blocks   = 2;    // LINUX: Blocks count in 512-byte chunks
     ip->i_block[0] = bno;  // new DIR has one data block
-    for (int i = 0; i < 15; ++i) {
+                           // initialize all data entries
+    for (int i = 1; i < 15; ++i) {
         ip->i_block[i] = 0;
     }
 
-    mip->modified = 1;
+    mip->modified = 1;  // sets modified
     iput(mip);
     /*
     // ***** create data block for new DIR containing . and .. entries ******
@@ -147,9 +148,65 @@ int my_mk_dir(MINODE *pip, char *name) {
 
        Then, write buf[ ] to the disk block bno;
     */
+    char dbuf[BLOCK_SIZE] = {0};  // empty upon new created dir
 
+    DIR  *dp = (DIR *)dbuf;
+    char *cp;
+
+    // make self entry "."
+    dp->inode    = ino;
+    dp->rec_len  = 12;
+    dp->name_len = 1;
+    dp->name[0]  = '.';
+
+    // make parent entry ".."
+    int pino = pip->ino;
+    int blk  = bno;
+
+    cp = dbuf + 12;
+    dp = (DIR *)cp;
+
+    dp->inode    = pip->no;
+    dp->rec_len  = BLOCK_SIZE - 12;
+    dp->name_len = 2;
+    dp->name[0] = dp->name[1] = '.';
+
+    put_block(dev, blk, dbuf);
     /*
     7. Finally, enter name ENTRY into parent's directory by
                 enter_child(pip, ino, name);
     */
+    enter_child(pip, ino, name);
+    return 0;
+}
+
+int enter_child(MINODE *pip, int ino, char *name) {
+    int NEED_LEN = 4 * ((8 + strlen(name) + 3) / 4);
+    int i;
+    for (i = 0; i < 12; i++) {
+        if (pip->INODE.i_block[i] == 0) break;
+    }
+    char buf[BLOCK_SIZE] = {0};
+    get_block(pip->dev, pip->INODE.i_block[i-1], buf);
+    DIR  *dp = (DIR *)buf;
+    char *cp = buf;
+
+    int IDEAL_LEN = 4 * ((8 + dp->name_len + 3) / 4);
+    while (cp < buf + BLOCK_SIZE) {
+        cp += dp->rec_len;
+        dp = (DIR *)cp;
+    }
+    int REMAIN = dp->rec_len - IDEAL_LEN;
+    if (REMAIN >= NEED_LEN) {
+        dp->rec_len = IDEAL_LEN;
+        cp += dp->rec_len;
+        dp = (DIR *)cp;
+        dp->inode = ino;
+        dp->name_len = strlen(name);
+        strncpy(dp->name, name, dp->name_len);
+        dp->rec_len = REMAIN;
+    } else {
+
+    }
+    return 0;
 }

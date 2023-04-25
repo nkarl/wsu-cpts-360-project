@@ -222,7 +222,7 @@ void iput(MINODE *mip)  // release a mip
       Use Mailman's algorithm to write minode.INODE back to disk)
       // NOTE: minode still in cacheList;
       *****************/
-    if (mip == 0) return;
+    if (!mip) return;
 
     mip->shareCount--;
     if (mip->shareCount > 0) return;

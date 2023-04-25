@@ -89,7 +89,7 @@ int show_dir(MINODE *mip) {
     // show contents of mip DIR: same as in LAB5
     INODE *ip = &(mip->INODE);
     char   sbuf[BLOCK_SIZE], temp[256];
-    DIR   *d_ptr;
+    DIR   *dp;
     char  *cp;
 
     // ASSUME only one data block i_block[0]
@@ -97,21 +97,21 @@ int show_dir(MINODE *mip) {
     printf("i_block[0]=%d\n", ip->i_block[0]);
     get_block(dev, ip->i_block[0], sbuf);
 
-    d_ptr = (DIR *)sbuf;
+    dp = (DIR *)sbuf;
     cp    = sbuf;
 
     while (cp < (sbuf + BLOCK_SIZE)) {
-        strncpy(temp, d_ptr->name, d_ptr->name_len);
-        temp[d_ptr->name_len] = 0;
+        strncpy(temp, dp->name, dp->name_len);
+        temp[dp->name_len] = 0;
 
         printf("%4d %4d %4d %s\n",
-               d_ptr->inode,
-               d_ptr->rec_len,
-               d_ptr->name_len,
+               dp->inode,
+               dp->rec_len,
+               dp->name_len,
                temp);
 
-        cp += d_ptr->rec_len;
-        d_ptr = (DIR *)cp;
+        cp += dp->rec_len;
+        dp = (DIR *)cp;
     }
     // placeholder return
     return EXIT_SUCCESS;
