@@ -124,10 +124,7 @@ int show_dir(MINODE *mip) {
 int hit_ratio() {
     // print cacheList;
     MINODE *mip = cacheList;
-    INODE  *ip;
-    int     i = 1;
     while (mip) {
-        ip = &(mip->INODE);
         printf("c%d[%d %d]s%d ->", mip->cacheCount, dev, mip->ino, mip->shareCount);
         mip = mip->next;
     }
@@ -136,6 +133,7 @@ int hit_ratio() {
     // compute and print hit_ratio
     int result = 100 * hits / requests;
     printf("requests=%d  hits=%d  hit_ratio=%d%%", requests, hits, result);
+    return result;
 }
 
 /**********************************************************************
@@ -272,8 +270,8 @@ int main(int argc, char *argv[]) {
             pwd(l_running->cwd);
         if (strcmp(cmd, "mkdir") == 0)
             /*mk_dir(pathname);*/
-        if (strcmp(cmd, "show") == 0)
-            show_dir(root);
+            if (strcmp(cmd, "show") == 0)
+                show_dir(root);
         if (strcmp(cmd, "hits") == 0)
             hit_ratio();
         if (strcmp(cmd, "exit") == 0)

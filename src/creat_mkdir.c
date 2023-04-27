@@ -180,6 +180,9 @@ int my_mk_dir(MINODE *pip, char *child_name) {
     return 0;
 }
 
+/*
+ * add child to parent data block.
+ */
 int enter_child(MINODE *pip, int ino, char *child_name) {
     char buf[BLOCK_SIZE] = {0};
     int  i,
@@ -190,7 +193,8 @@ int enter_child(MINODE *pip, int ino, char *child_name) {
         if (pip->INODE.i_block[i] == 0) break;
     }
 
-    get_block(pip->dev, pip->INODE.i_block[i - 1], buf);
+    int data_blk = pip->INODE.i_block[i-1];
+    get_block(pip->dev, data_blk, buf);
     DIR  *dp = (DIR *)buf;
     char *cp = buf;
 
@@ -204,8 +208,8 @@ int enter_child(MINODE *pip, int ino, char *child_name) {
     int REMAIN = dp->rec_len - IDEAL_LEN;
     if (REMAIN >= NEED_LEN) {
         dp->rec_len = IDEAL_LEN;
-        cp += dp->rec_len;  // move up by rec_len, and
-        // create the new dir
+        cp += dp->rec_len;  // move up the block by rec_len, and
+        // create record for the new dir
         dp           = (DIR *)cp;
         dp->inode    = ino;
         dp->name_len = strlen(child_name);
@@ -221,13 +225,18 @@ int enter_child(MINODE *pip, int ino, char *child_name) {
           |myino rlen nlen myname                                                  |
           --------------------------------------------------------------------------
         */
-        int bno = balloc(pip->dev);     // allocate new data block
-        dp->inode = ino;
+        int bno = balloc(pip->dev);  // allocate new data block
+        pip->INODE.i_blocks += 1;
+        pip->INODE.i_links_count += 1;
+
+        dp->inode    = ino;
         dp->name_len = strlen(child_name);
         strncpy(dp->name, child_name, dp->name_len);
         dp->rec_len = BLOCK_SIZE;
-        // Write data block to disk;
-        put_block(pip->dev, bno, buf);
+
+        put_block(pip->dev, bno, buf); // Write data block to disk;
     }
+    put_block(pip->dev, data_blk, buf);
+
     return 0;
 }

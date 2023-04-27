@@ -5,6 +5,7 @@
 extern PROC *running;
 extern int   dev;
 extern int   fd, dev;
+extern int   inodes_start;
 
 extern MINODE *root;
 
@@ -16,8 +17,7 @@ extern MINODE *root;
  * would save a lot of time debugging.
  */
 void cd(char *pathname) {
-    MINODE      *mip;
-    unsigned int ino;
+    MINODE *mip;
     if (strlen(pathname) == 0 || strcmp(pathname, "/") == 0) {
         /*ino          = root->ino;*/
         /*mip          = iget(dev, ino);*/
@@ -36,7 +36,7 @@ void cd(char *pathname) {
     // check if dir
     if (S_ISDIR(mip->INODE.i_mode)) {
         iput(running->cwd);
-        running->cwd = mip;      // new minode to mip
+        running->cwd = mip;  // new minode to mip
         return;
     }
     printf("Error: End of path is not a directory\n");
@@ -180,19 +180,40 @@ int ls() {
  * pwd
  */
 int rpwd(MINODE *wd) {
-    MINODE *temp_root = root;
-    if (wd == temp_root) return EXIT_SUCCESS;
+    if (wd == root)
+        return -1;
 
-    MINODE *mip = wd;
-    INODE  *ip  = &(mip->INODE);
-    int     ino = search(wd, "..");
+    MINODE *mip             = wd;
+    INODE  *ip              = &(mip->INODE);
+    int     ino             = search(wd, "..");
+    char    buf[BLOCK_SIZE] = {0};
 
-    return EXIT_SUCCESS;
+    if (ino <= 1)
+        return -1;
+
+    MINODE *pip = iget(dev, ino);
+    if (!pip)
+        return -1;
+
+    int pino;
+    findino(pip, &pino);
+    int blk    = (pino - 1) / 8 + inodes_start;
+    int offset = (pino - 1) % 8;
+    get_block(dev, blk, buf);
+    DIR *dp = (DIR *)buf + offset;
+    char name_buf[BLOCK_SIZE] = {0};
+    strncpy(name_buf, dp->name, dp->name_len);
+    printf("%s", name_buf);
+    rpwd(pip);
+
+    return 0;
 }
 
 int pwd(MINODE *mip) {
-    printf("CWD = %s\n", "/");
-    rpwd(mip);
+    if (mip == root)
+        printf("CWD = %s\n", "/");
+    else
+        rpwd(mip);
 
     // placeholder return
     return EXIT_SUCCESS;

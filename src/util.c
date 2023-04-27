@@ -155,6 +155,7 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
         return mip;
     }
     printf("\t >> DONE checking in cacheList for a free minode (shareCount == 0).\n");
+    return 0;
 }
 
 /**********************************************************************
@@ -162,13 +163,11 @@ MINODE *iget(int dev, int ino)  // return minode pointer of (dev, ino)
  */
 MINODE *searchCacheList() {
     MINODE *cache = cacheList;
-    MINODE *prev  = cache;
     while (cache) {
         if (cache->shareCount == 0) {
             ++hits;
             return cache;
         }
-        prev  = cache;
         cache = cache->next;
     }
     return 0;  // return NULL if found none available in cache.
@@ -382,7 +381,7 @@ int findmyname(MINODE *pip, int myino, char myname[]) {
 }
 
 /**********************************************************************
- * search for ino by pathname
+ * search for parent ino by ino
  */
 int findino(MINODE *mip, int *myino) {
     /*****************
@@ -391,8 +390,33 @@ int findino(MINODE *mip, int *myino) {
     get myino of .
     return parent_ino of ..
     *******************/
+    INODE *ip = &(mip->INODE);
+    DIR   *dp;
+
+    char buf[BLOCK_SIZE],
+        name_buf[BLOCK_SIZE],
+        *cp;
+
+    int i = 0;
+    for (i = 0; ip->i_block[i] != 0 && i < 12; i++) {
+        get_block(mip->dev, ip->i_block[i], buf);
+        dp = (DIR *)buf;
+        cp = buf;
+
+        while (cp < buf + BLOCK_SIZE) {
+            strncpy(name_buf, dp->name, dp->name_len);
+            name_buf[dp->name_len] = 0;
+            if (strcmp("..", name_buf) == 0) {
+                *myino = dp->inode;
+                return 0;
+            }
+            cp += dp->rec_len;
+            dp = (DIR *)cp;
+        }
+    }
+
     // placeholder return
-    return EXIT_SUCCESS;
+    return 0;
 }
 
 /**********************************************************************
