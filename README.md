@@ -57,3 +57,9 @@ At the moment, there are a few steps I have in mind.
 			- including *wrap* and *unwrap*.
 	- Continue to implement other functionality and features, such as process and thread management.
 
+#### details
+
+0. Analyze and model.
+1. Start with the vdisk's `struct`, because `ls` will access its structural attributes.
+2. Implement `ls` such that it correctly query information about a file and a directory node.
+
