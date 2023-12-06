@@ -46,6 +46,14 @@ At the moment, there are a few steps I have in mind.
 		- How system calls are executed.
 		- Identify problems in KC's source code (a global namespace highly polluted with global variables where they get mutated with no way to track).
 3. Develop a plan to rewrite in Rust.
-	- Develop a basic proficiency needed to mount the vdisk and implement the `ls` function.
+	- *Develop a basic proficiency in Rust* needed to mount the vdisk and implement the `ls` function.
+		- This requires a working understanding of Rust's fundamentals like
+			- *data types*,
+			- *functions*,
+			- *macros*,
+			- *structs*,
+			- *traits* and
+			- the *ownship model*,
+			- including *wrap* and *unwrap*.
 	- Continue to implement other functionality and features, such as process and thread management.
 
