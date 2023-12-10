@@ -34,6 +34,10 @@ endif
 ## BUILD DIRECTIVE                                              ##
 ##################################################################
 all 			: $(target)
+	#
+	# > Finished building.
+	#
+	@ printf "\n"
 
 $(target) 		: $(objects)
 	#
@@ -46,6 +50,7 @@ $(obj_dir)/%.o 	: $(source)/%.c
 	#
 	# 1. set up project structure.
 	#
+	# created target/*
 	@if [ ! -d "$(obj_dir)" ]; then mkdir -p $(obj_dir); fi
 	#
 	# 2. compile and assemble but do not link yet.
@@ -58,3 +63,5 @@ $(obj_dir)/%.o 	: $(source)/%.c
 .PHONY: clean
 clean:
 	rm -r $(target) $(obj_dir)/*
+	#
+	# 0. cleaned up build.
