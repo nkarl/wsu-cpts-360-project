@@ -1,21 +1,24 @@
 ##################################################################
 ## MAKEFILE                                                     ##
 ##################################################################
-headers         := hdr
+## project directories
+headers         := src/hdr
 source          := src
 obj_dir         := target/obj
 bin_dir         := target/bin
 
-objects         := main.o # add more *.o here
-objects         := $(obj_dir)/$(objects)
+## compiled and assembled object output directory
+objects         := main.o add.o # add more *.o here
+objects         := $(addprefix $(obj_dir)/, $(objects))
 
+## binary output directory
 app             := app
 target 			:= $(bin_dir)/$(app)
 
+## compiler flags
 CXX             := gcc # run make CXX=clang
 
-COMPILER_FLAGS  := -I$(headers) -g \
-					-Wall -Wextra -Wconversion -pedantic
+COMPILER_FLAGS  := -I$(headers)
 
 MSG_GCC    		:= -DMESSAGE="Compiled with GCC"
 MSG_CLG    		:= -DMESSAGE="Compiled with Clang"
@@ -45,6 +48,9 @@ $(target) 		: $(objects)
 	#
 	@if [ ! -d "$(bin_dir)" ]; then mkdir -p $(bin_dir); fi
 	$(CXX) $(LINKER_FLAGS) $^ -o $@
+
+$(obj_dir)/%.o  : $(source)/lib/%.c
+	$(CXX) $(COMPILER_FLAGS) -c $^ -o $@
 
 $(obj_dir)/%.o 	: $(source)/%.c
 	#
