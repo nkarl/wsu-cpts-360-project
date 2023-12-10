@@ -15,7 +15,8 @@
 #if defined(_WIN32)
 #include "ext2fs/ext2_fs.h"
 #elif __linux__
-#include <ext2fs/ext2_fs.h>
+#include "ext2fs/ext2_fs.h"
+//#include <ext2fs/ext2_fs.h>
 #endif
 
 // define shorter TYPES, save typing efforts
