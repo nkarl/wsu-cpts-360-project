@@ -12,6 +12,29 @@ This project is a system with two major components:
 - The virtual disk needs to be modeled into EX2 structures in C (retrieves references from KC's book).
 	- These structures will hold information pertaining to records saved as data blocks on the vdisk.
 
+On every virtual disk the boot block (B-00) can be ignored. The relevent information start with B-01, the super block. The super block defines the disk structure. From a high-level view, data on disk is recorded as bytes. Bytes are grouped together as blocks. Blocks are grouped together as groups.
+
+#### The Model of EXT2 File Systems
+
+```txt
+- a disk       :
+  - a group    : 8192 blocks maximum    , or 8 MB
+    - a block  : 1024 bytes             , or 1 KB
+      - a byte : a unit of encoded data ,    8 bits
+```
+
+#### Our Working Vdisk
+Our working virtual disk is instantiated as follows:
+
+```txt
+- 1 disk       :
+  - 1 group    : 1440 blocks            , or 1.4 MB (size of a floppy disk)
+    - a block  : 1024 bytes             , or 1   KB
+      - a byte : a unit of encoded data ,    8   bits
+```
+
+#### Creating Our Working Vdisk
+
 ```sh
 # if:input file, of:output file, bs: number of bytes, count: number of blocks
 dd if=/dev/zero of=vdisk bs=1024 count=1440
@@ -23,54 +46,142 @@ mke2fs vdisk 1440
 # Creating filesystem with 1440 1k blocks and 176 inodes
 ```
 
-```
-|     0 |     1 |  2 |  . . . 7 |    8 |    9 |  10  . . . 32 | 33 . . . 1439 | 
-|  boot | super | GD | reserved | bmap | imap | inodes blocks | data blocks   |
+#### The Layout of the Vdisk
+
+```txt
+|    0 |     1 |  2 |  . . . 7 |    8 |    9 |  10  . . . 32 | 33 . . . 1439 | 
+| boot | super | GD | reserved | bmap | imap | inodes blocks |   data blocks |
 ```
 
 <table>
   <tr>
-    <th style='text-align:right'>block:</th>
-    <td>0</td>
-    <td>1</td>
-    <td>2</td>
-    <td>3 .. 7</td>
-    <td>8</td>
-    <td>9</td>
-    <td>10 .. 32</td>
-    <td>33 .. 1439</td>
+    <th style='text-align:left'>0</th>
+    <th style='text-align:left'>1</th>
+    <th style='text-align:left'>2</th>
+    <th style='text-align:left'>3..7</th>
+    <th style='text-align:left'>8</th>
+    <th style='text-align:left'>9</th>
+    <th style='text-align:left'>10..32</th>
+    <th style='text-align:left'>33..1439</th>
   </tr>
   <tr>
-    <th style='text-align:right'>name:</th>
-    <td>boot</td>
+    <td style='background-color:gray'>boot</td>
     <td>super</td>
-    <td>group descriptor</td>
-    <td>reserved</td>
+    <td>GD</td>
+    <td style='background-color:gray'>reserved</td>
     <td>bmap</td>
     <td>imap</td>
-    <td>inode blocks</td>
-    <td>data blocks</td>
+    <td>inodes</td>
+    <td>data</td>
   </tr>
   <tr>
-    <th style='text-align:right'>info:</th>
-    <td></td>
-    <td>0+1024
-      <hr>contains information about the entire filesystem.
+    <td style='background-color:gray'></td>
+    <td><code>0+1024 B</code>
+      <hr>describes the disk.
     </td>
     <td>&nbsp
-      <hr>EXT2 has groups, each 8192 blocks.
+      <hr>describes the groups, each 8192 blocks.
     </td>
-    <td></td>
-    <td>1439 bits
-      <hr>maps disk's usage. 0 for FREE, 1 for IN_USE.
+    <td style='background-color:gray'></td>
+    <td><code>1439 b</code>
+      <hr>maps disk usage. 0 for FREE, 1 for IN_USE.
     </td>
     <td>184 nodes
-      <hr>maps files. 0 is VALID, 1 is INVALID.
+      <hr>maps file entries.<br><code>VALID = 0</code><br><code>INVALID = 1</code>
     </td>
-    <td>128B per inode</td>
+    <td><code>128 B</code> per inode</td>
     <td></td>
   </tr>
 </table>
+
+## The Disk Interface
+
+This section defines the interface model to get a disk's structural information.
+
+```c
+// header definition
+#ifndef EXT2_FS_H
+#define EXT2_FS_H
+
+#define EXT2_NAME_LEN 256
+```
+
+### B-01. the super block
+
+The **super** block holds the definition of the virtual disk. The structure with relevant attributes are defined below.
+
+```c
+// typedef u8, u16, u32 SUPER for convenience
+typedef unsigned char  u8;
+typedef unsigned short u16;
+typedef unsigned int   u32;
+struct ext2_super_block {
+    u32 s_inodes_count;       /* Inodes count */
+    u32 s_blocks_count;       /* Blocks count */
+    u32 s_r_blocks_count;     /* Reserved blocks count */
+    u32 s_free_blocks_count;  /* Free blocks count */
+    u32 s_free_inodes_count;  /* Free inodes count */
+
+    u32 s_first_data_block;   /* First Data Block */
+    u32 s_log_block_size;     /* Block size */
+
+    u32 s_log_cluster_size;   /* Allocation cluster size */
+    u32 s_blocks_per_group;   /* # Blocks per group */
+    u32 s_clusters_per_group; /* # Fragments per group */
+    u32 s_inodes_per_group;   /* # Inodes per group */
+    u32 s_mtime;              /* Mount time */
+    u32 s_wtime;              /* Write time */
+
+    u16 s_mnt_count;          /* Mount count */
+    u16 s_max_mnt_count;      /* Maximal mount count */
+
+    u16 s_magic;              /* Magic signature */
+
+    // more non-essential fields
+    u16 s_inode_size; /* size of inode structure */
+};
+```
+### B-02. the group descriptor block
+
+The *group descriptor* (**GD**) block. 
+
+```c
+struct ext2_group_desc {
+    u32 bg_block_bitmap;       // Bmap block number
+    u32 bg_inode_bitmap;       // Imap block number
+    u32 bg_inode_table;        // Inodes begin block number
+                               //
+    u16 bg_free_blocks_count;  // THESE are OBVIOUS
+    u16 bg_free_inodes_count;
+    u16 bg_used_dirs_count;
+    u16 bg_pad;  // ignore these
+    u32 bg_reserved[3];
+};
+```
+**NOTE**: *it is possible that blocks $3..7$ are reserved for more group descriptors*. On systems that are more massive, more GDs will be used.
+
+### B-10. the inode blocks
+
+```c
+struct ext2_inode {
+    u16 i_mode;   // 16 bits = |tttt|ugs|rwx|rwx|rwx|
+    u16 i_uid;    // owner uid
+    u32 i_size;   // file size in bytes
+    u32 i_atime;  // time fields in seconds
+    u32 i_ctime;  // since 00:00:00,1-1-1970
+    u32 i_mtime;
+    u32 i_dtime;
+    u16 i_gid;          // group ID
+    u16 i_links_count;  // hard-link count
+    u32 i_blocks;       // number of 512-byte sectors
+    u32 i_flags;        // IGNORE
+    u32 i_reserved1;    // IGNORE
+
+    u32 i_block[15];    // See details below
+
+    u32 i_pad[7];       // for inode size = 128 bytes
+};
+```
 
 ## The Shell
 
