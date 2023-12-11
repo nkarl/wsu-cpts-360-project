@@ -5,14 +5,14 @@ This project is a system with two major components:
 2. the Shell program that mounts and loops on that vdisk.
 
 
-## The Virtual Disk
+## The Virtual Disk Model
 
 - The virtual disk can be created via a command line (retrieves reference from KC's book).
 
 - The virtual disk needs to be modeled into EX2 structures in C (retrieves references from KC's book).
 	- These structures will hold information pertaining to records saved as data blocks on the vdisk.
 
-On every virtual disk the boot block (B-00) can be ignored. The relevent information start with B-01, the super block. The super block defines the disk structure. From a high-level view, data on disk is recorded as bytes. Bytes are grouped together as blocks. Blocks are grouped together as groups.
+On every virtual disk the boot block (B-0) can be ignored. The relevent information start with B-1, the **super** block. The super block defines the disk structure. From a high-level view, data on disk is recorded as bytes. Bytes are grouped together as blocks. Blocks are grouped together as groups.
 
 #### The Model of EXT2 File Systems
 
@@ -52,7 +52,7 @@ mke2fs vdisk 1440
 #### The Layout of the Vdisk
 
 ```txt
-|    0 |     1 |  2 |  . . . 7 |    8 |    9 |  10  . . . 32 | 33 . . . 1439 | 
+|    0 |     1 |  2 |  . . . 7 |    8 |    9 |  10  . . . 32 | 33 . . . 1439 | <- limit at disk creation
 | boot | super | GD | reserved | bmap | imap |        inodes |          data |
 ```
 
@@ -97,7 +97,7 @@ mke2fs vdisk 1440
   </tr>
 </table>
 
-## The Disk Interface
+## The Disk Structures
 
 This section defines the interface model to get a disk's structural information.
 
@@ -141,7 +141,7 @@ struct ext2_super_block {
     u16 s_magic;              /* Magic signature */
 
     // more non-essential fields
-    u16 s_inode_size; /* size of inode structure */
+    u16 s_inode_size;         /* size of inode structure */
 };
 ```
 ### B-02. the group descriptor block
@@ -157,7 +157,7 @@ struct ext2_group_desc {
     u16 bg_free_blocks_count;  // THESE are OBVIOUS
     u16 bg_free_inodes_count;
     u16 bg_used_dirs_count;
-    u16 bg_pad;  // ignore these
+    u16 bg_pad;                // ignore these
     u32 bg_reserved[3];
 };
 ```
@@ -186,6 +186,26 @@ struct ext2_inode {
 };
 ```
 
+## Functional Interface
+
+#### Plan
+
+#### Implementation
+
+##### 01. `ls`
+
+This function list relevant information about the entries in a directory.
+
+##### 02. `mkdir`
+
+This function creates an *directory* entry on the vdisk.
+
+##### 03. `touch`
+
+This function creates a *file* entry on the vdisk, and set content to of the file to the correct number of data bytes.
+
+
+
 ## The Shell
 
 - The Shell is a runtime loop.
@@ -200,3 +220,4 @@ The first phase is to provide an API that interface with the vdisk. This API wil
 The second phase is to implement a scheme of process management for some commands. The simplest option is forking a process. More details will be explored later.
 
 Finally, these commands will be imported and used as a library of a shell program.
+
