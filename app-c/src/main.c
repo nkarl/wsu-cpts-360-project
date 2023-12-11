@@ -1,8 +1,7 @@
-#include <stdio.h>
 #include "hdr/add.h"
+#include <stdio.h>
 
-int main()
-{
+int main() {
     printf("%s", "hello");
     int a = add(2, 5);
     printf("%d", a);
