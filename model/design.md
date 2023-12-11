@@ -29,23 +29,47 @@ mke2fs vdisk 1440
 ```
 
 <table>
-    <tr>
-      <th>block:</th><td>0</td><td>1</td><td>2</td><td>3 .. 7</td><td>8</td><td>9</td><td>10 .. 32</td><td>33 .. 1439</td>
-    </tr>
-    <tr>
-      <th>name:</th><td>boot</td><td>super</td><td>group descriptor</td><td>reserved</td><td>bmap</td><td>imap</td><td>inode blocks</td><td>data blocks</td>
-    </tr>
-    <tr>
-      <th>info:</th>
-      <td></td>
-      <td>0+1024<hr>contains information about the entire filesystem.</td>
-      <td>&nbsp<hr>EXT2 has groups, each 8192 blocks.</td>
-      <td></td>
-      <td>1439 bits<hr>maps disk's usage. 0 for FREE, 1 for IN_USE.</td>
-      <td>184 nodes<hr>maps files. 0 is VALID, 1 is INVALID.</td>
-      <td>128B per inode</td>
-      <td></td>
-    </tr>
+  <tr>
+    <th style='text-align:right'>block:</th>
+    <td>0</td>
+    <td>1</td>
+    <td>2</td>
+    <td>3 .. 7</td>
+    <td>8</td>
+    <td>9</td>
+    <td>10 .. 32</td>
+    <td>33 .. 1439</td>
+  </tr>
+  <tr>
+    <th style='text-align:right'>name:</th>
+    <td>boot</td>
+    <td>super</td>
+    <td>group descriptor</td>
+    <td>reserved</td>
+    <td>bmap</td>
+    <td>imap</td>
+    <td>inode blocks</td>
+    <td>data blocks</td>
+  </tr>
+  <tr>
+    <th style='text-align:right'>info:</th>
+    <td></td>
+    <td>0+1024
+      <hr>contains information about the entire filesystem.
+    </td>
+    <td>&nbsp
+      <hr>EXT2 has groups, each 8192 blocks.
+    </td>
+    <td></td>
+    <td>1439 bits
+      <hr>maps disk's usage. 0 for FREE, 1 for IN_USE.
+    </td>
+    <td>184 nodes
+      <hr>maps files. 0 is VALID, 1 is INVALID.
+    </td>
+    <td>128B per inode</td>
+    <td></td>
+  </tr>
 </table>
 
 ## The Shell
