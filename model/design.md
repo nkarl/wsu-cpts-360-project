@@ -17,20 +17,23 @@ On every virtual disk the boot block (B-00) can be ignored. The relevent informa
 #### The Model of EXT2 File Systems
 
 ```txt
-- a disk       :
-  - a group    : 8192 blocks maximum    , or 8 MB
-    - a block  : 1024 bytes             , or 1 KB
-      - a byte : a unit of encoded data ,    8 bits
+- a         disk :
+  - a      group : 8192 blocks maximum        , or 8 MB
+    - a    block : 1024 bytes                 , or 1 KB
+                 :    8 inodes
+      - a  inode :  128 bytes
+        - a byte :    1 unit of encoded data  ,    8 bits
 ```
 
 #### Our Working Vdisk
 Our working virtual disk is instantiated as follows:
 
 ```txt
-- 1 disk       :
-  - 1 group    : 1440 blocks            , or 1.4 MB (size of a floppy disk)
-    - a block  : 1024 bytes             , or 1   KB
-      - a byte : a unit of encoded data ,    8   bits
+1                 disk :
+  1              group : 1440              blocks  ,             or ~1.4 MB (size of a floppy disk)
+    1440        blocks : (1440 - 33) * 1024 bytes  , B[33..1439] or ~1.4 MB of actual space for data
+      184       inodes : (  33 - 10) *    8 inodes , B[10..  32]
+       23 inode blocks : (  33 - 10)
 ```
 
 #### Creating Our Working Vdisk
@@ -50,7 +53,7 @@ mke2fs vdisk 1440
 
 ```txt
 |    0 |     1 |  2 |  . . . 7 |    8 |    9 |  10  . . . 32 | 33 . . . 1439 | 
-| boot | super | GD | reserved | bmap | imap | inodes blocks |   data blocks |
+| boot | super | GD | reserved | bmap | imap |        inodes |          data |
 ```
 
 <table>
