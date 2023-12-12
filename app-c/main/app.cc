@@ -1,4 +1,4 @@
-#include "hdr/add.h"
+#include "../lib/add/add.h"
 #include <stdio.h>
 
 int main() {

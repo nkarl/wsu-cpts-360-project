@@ -2,13 +2,14 @@
 ## MAKEFILE                                                     ##
 ##################################################################
 ## project directories
-headers         := src/hdr
+headers         := lib
 source          := src
 obj_dir         := target/obj
 bin_dir         := target/bin
 
 ## compiled and assembled object output directory
-objects         := main.o add.o # add more *.o here
+main 			:= main.o
+lib 			:= add.o # add more *.o here
 objects         := $(addprefix $(obj_dir)/, $(objects))
 
 ## binary output directory
@@ -49,10 +50,10 @@ $(target) 		: $(objects)
 	@if [ ! -d "$(bin_dir)" ]; then mkdir -p $(bin_dir); fi
 	$(CXX) $(LINKER_FLAGS) $^ -o $@
 
-$(obj_dir)/%.o  : $(source)/lib/%.c
+$(obj_dir)/%.o  : lib/add/%.c
 	$(CXX) $(COMPILER_FLAGS) -c $^ -o $@
 
-$(obj_dir)/%.o 	: $(source)/%.c
+$(obj_dir)/%.o 	: %.c
 	#
 	# 1. set up project structure.
 	#
