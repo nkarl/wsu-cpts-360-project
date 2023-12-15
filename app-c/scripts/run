@@ -1,0 +1,6 @@
+make clean
+make
+DISK=vdisk
+APP=build/bin/app
+chmod +x $APP
+./$APP $DISK

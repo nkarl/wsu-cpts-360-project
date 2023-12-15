@@ -1,5 +1,5 @@
-#ifndef SUB_H
-#define SUB_H
+#ifndef SUB_HPP
+#define SUB_HPP
 
 int sub(const int, const int);
 
