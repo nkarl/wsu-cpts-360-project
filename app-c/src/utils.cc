@@ -10,8 +10,6 @@ void boot_test() {
     printf("sub 5 2 == %d\n\n", b);
 }
 
-
-int print(char *s, unsigned int x)
-{
-printf("%-30s = %8d\n", s, x);
+void print(char *s, unsigned int x) {
+    printf("%-30s = %8d\n", s, x);
 }
