@@ -1,6 +1,7 @@
 #include "hdr/my_types.hpp"
 
 #include "utils.cc"
+#include "tests/test_operators.cc"
 
 i32 main(i32 argc, i8 *argv[]) {
     test_boot_compile_link();

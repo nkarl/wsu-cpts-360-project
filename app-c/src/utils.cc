@@ -1,27 +1,29 @@
 #include "hdr/my_types.hpp"
 
-#include <cassert>
 #include <ctime>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "hdr/add.hpp"
 #include "hdr/constants.hpp"
 #include "hdr/ext2fs.hpp"
-#include "hdr/sub.hpp"
-
-typedef struct ext2_super_block SUPER;
 
 struct VDisk {
+    typedef struct ext2_super_block SUPER;
+
     u32    fd;
     u32    blksize = constants::BLOCK_SIZE;
     u32    inodesize;
     SUPER *sp;
-    char   buf[constants::BLOCK_SIZE];
+    i8     buf[constants::BLOCK_SIZE];
 
-    void readSUPER(char *device) {
+    /**
+     *
+     * reader disk information from the SUPER block.
+     *
+     */
+    void readSUPER(i8 *device) {
         fd = open(device, O_RDONLY);
         if (fd < 0) {
             printf("open %sfailed\n", device);
@@ -67,8 +69,3 @@ struct VDisk {
         printf("%-30s = %8d\n", s, x);
     }
 };
-
-void test_boot_compile_link() {
-    assert((void("\nTest Add: "), add(2, 5) == 7));
-    assert((void("\nTest Sub: "), sub(5, 2) == 3));
-}

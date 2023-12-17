@@ -4,6 +4,8 @@
 ## project directories
 hdr       			:= src/hdr
 src         		:= src
+lib             := src/lib
+tests           := src/tests
 obj_dir     		:= build/obj
 bin_dir     		:= build/bin
 
@@ -44,8 +46,12 @@ ${app} 					: ${objects}
 ${obj_dir}/%.o 	: ${src}/%.cc
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
-# 1. compile the library code.
-${obj_dir}/%.o  : ${src}/lib/%.cc
+# 1. compile the lib test code.
+${obj_dir}/%.o  : ${tests}/%.cc
+	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
+
+# 1. compile the lib code.
+${obj_dir}/%.o  : ${lib}/%.cc
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
 
