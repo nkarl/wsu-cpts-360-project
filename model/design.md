@@ -7,71 +7,75 @@ This project is a system with two major components:
 
 ## The Virtual Disk Model
 
-- The virtual disk (vdisk) can be created via a command line (retrieves reference from KC's book).
+- The virtual disk (vdisk) can be created via a command line.
 
-- The vdisk needs to be modeled into EXT4 structures in C (replacing the EXT2 structure from KC's book).
+- The vdisk is modeled into EXT2 structures in C.
 	- These structures will hold information pertaining to records saved as data blocks on the vdisk.
 
-On EXT4 there is no boot block (B-0 on EXT2). The first block containing relevent information start with B-0, the **SUPER** block. The **GROUP DESCRIPTOR** block immediately follows it, B-1. The super block defines the disk structure. From a high-level view, data on disk is recorded as bytes. Bytes are grouped together as blocks. Blocks are grouped together as groups.
+On EXT2 the boot block is B-0. The first block containing relevent information to us start with B-1, the **SUPER** block. The **GROUP DESCRIPTOR** block immediately follows it, B-2. The **SUPER** block defines the disk structure. From a high-level view, data on disk is recorded as bytes. Bytes are grouped together as blocks. Blocks are grouped together as groups.
 
 #### The Model of EXT4 File Systems
 
 ```txt
 - a         disk :
-  - a      group : 32768 blocks maximum        , or 8 MB
-                     192 inodes maximum
-    - a    block :  4096 bytes                 , or 4 KB
-                 :    16 inodes
-      - an inode :   256 bytes
-        - a byte :     1 unit of encoded data  ,    8 bits
+  - a      group : 8192 blocks maximum        , or 4 MB
+                    176 inodes maximum
+    - a    block : 1024 bytes                 , or 1 KB
+                 :    8 inodes
+      - an inode :  128 bytes
+        - a byte :    1 unit of encoded data  ,    8 bits
 ```
 
 #### Our Working Vdisk
 Our working vdisk is instantiated as follows:
 
 ```txt
-1                 disk :
-  1              group : 1440              blocks  ,             or ~1.4 MB (size of a floppy disk)
-    1440        blocks : (1440 - 33) * 1024 bytes  , B[33..1439] or ~1.4 MB of actual space for data
-      184       inodes : (  33 - 10) *    8 inodes , B[10..  32]
-       23 inode blocks : (  33 - 10)
+   1            disk :
+   1           group :  1440             blocks  ,             or ~1.4 MB (size of a floppy disk)
+1440          blocks : (1440 - 32) * 1024 bytes  , B[33..1439] or ~1.4 MB of actual space for data
+ 176          inodes : (1440 - 32) *    8 inodes , B[10..  32]
+  23    inode blocks : (  33 - 10)
 ```
 
 #### Creating Our Working Vdisk
 
 ```sh
 # if:input file, of:output file, bs: number of bytes, count: number of blocks
-dd if=/dev/zero of=vdisk bs=4096 count=1440
-# 1440+0 records in
-# 1440+0 records out
-# 5898240 bytes (5.9 MB, 5.6 MiB) copied, 0.0069426 s, 850 MB/s
-mke2fs 1.47.0 (5-Feb-2023)
-# Discarding device blocks: done                            
-# Creating filesystem with 360 4k blocks and 192 inodes
+dd if=/dev/zero of=vdisk bs=1024 count=1440
 
-# Allocating group tables: done                            
-# Writing inode tables: done                            
-# Writing superblocks and filesystem accounting information: done
+1440+0 records in
+1440+0 records out
+1474560 bytes (1.5 MB, 1.4 MiB) copied, 0.00430258 s, 343 MB/s
+mke2fs 1.47.0 (5-Feb-2023)
+Discarding device blocks: done                            
+Creating filesystem with 1440 1k blocks and 176 inodes
+
+Checking for bad blocks (read-only test): done                                                 
+Allocating group tables: done                            
+Writing inode tables: done                            
+Writing superblocks and filesystem accounting information: done
 ```
 
 #### The Layout of the Vdisk
 
 ```txt
-|     0 |  1 | 2 . . . 6 |    7 |    8 | 9 . . . 31 | 32 . . . 360 | <- limit at disk creation
-| super | GD |  reserved | bmap | imap |     inodes |         data |
+|    0 |     1 |  2 | 3 . . . 7 |    8 |    9 | 10 . . . 32 | 33 . . . 1439 | <- limit at disk creation
+| boot | super | GD |  reserved | bmap | imap |      inodes |          data |
 ```
 
 <table>
   <tr>
-    <th style='text-align:left'>0</th>
+    <th style='text-align:left;background-color:gray'>0</th>
     <th style='text-align:left'>1</th>
-    <th style='text-align:left'>2..6</th>
-    <th style='text-align:left'>7</th>
+    <th style='text-align:left'>2</th>
+    <th style='text-align:left;background-color:gray'>3..7</th>
     <th style='text-align:left'>8</th>
-    <th style='text-align:left'>9..31</th>
-    <th style='text-align:left'>32..360</th>
+    <th style='text-align:left'>9</th>
+    <th style='text-align:left'>10..32</th>
+    <th style='text-align:left'>33..1439</th>
   </tr>
   <tr>
+    <td style='background-color:gray'>boot</td>
     <td>super</td>
     <td>GD</td>
     <td style='background-color:gray'>reserved</td>
@@ -81,6 +85,7 @@ mke2fs 1.47.0 (5-Feb-2023)
     <td>data</td>
   </tr>
   <tr>
+    <td style='background-color:gray'></td>
     <td><code>0+1024 B</code>
       <hr>describes the disk.
     </td>
@@ -89,10 +94,10 @@ mke2fs 1.47.0 (5-Feb-2023)
     </td>
     <td style='background-color:gray'></td>
     <td><code>1439 b</code>
-      <hr>maps disk usage. 0 for FREE, 1 for IN_USE.
+      <hr>maps disk usage.<br><code>FREE=0<br>IN_USE=1</code>
     </td>
-    <td>184 nodes
-      <hr>maps file entries.<br><code>VALID = 0</code><br><code>INVALID = 1</code>
+    <td><code>176 b</code>
+      <hr>maps file entries.<br><code>VALID=0</code><br><code>INVALID=1</code>
     </td>
     <td><code>128 B</code> per inode</td>
     <td></td>

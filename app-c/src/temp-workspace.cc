@@ -31,7 +31,7 @@ struct VDisk {
 
         i8 buf[constants::BASE_BLOCK_SIZE];
 
-        lseek(fd, blksize, SEEK_SET);  // block 0 on FD, offset by blksize on HD
+        lseek(fd, blksize * 1, SEEK_SET);  // block 0 on FD, offset by blksize on HD
         read(fd, buf, blksize);
         sp = (SUPER *)buf;
         // as a super block structure
