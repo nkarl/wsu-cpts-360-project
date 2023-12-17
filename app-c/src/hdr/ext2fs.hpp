@@ -1,12 +1,12 @@
 #ifndef EXT2_FS_HPP
 #define EXT2_FS_HPP
 
-#define EXT2_NAME_LEN 256
-
 #include "my-types.hpp"
 
+constexpr u16 EXT2_NAME_LEN = 256;
+
 /* page 303 */
-struct ext2_super_block {
+struct ext2_block_super {
     u32 s_inodes_count           ; /* Inodes count */
     u32 s_blocks_count           ; /* Blocks count */
     u32 s_r_blocks_count         ; /* Reserved blocks count */
@@ -33,7 +33,7 @@ struct ext2_super_block {
 };
 
 /* page 303 */
-struct ext2_group_desc {
+struct ext2_block_group_desc {
     u32 bg_block_bitmap           ; // Bmap block number
     u32 bg_inode_bitmap           ; // Imap block number
 

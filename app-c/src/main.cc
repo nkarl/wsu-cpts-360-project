@@ -20,7 +20,7 @@ i32 main(i32 argc, i8 *argv[]) {
         exit(1);
     }
 
-    VDisk vdisk;
+    FileSystem::EXT2 vdisk;
     vdisk.readSUPER(diskname);
 
     return 0;
