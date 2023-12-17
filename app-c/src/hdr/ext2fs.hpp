@@ -3,10 +3,7 @@
 
 #define EXT2_NAME_LEN 256
 
-// typedef u8, u16, u32 SUPER for convenience
-typedef unsigned char  u8;
-typedef unsigned short u16;
-typedef unsigned int   u32;
+#include "my_types.hpp"
 
 /* page 303 */
 struct ext2_super_block {

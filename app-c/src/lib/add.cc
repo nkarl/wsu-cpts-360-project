@@ -1,5 +1,5 @@
 #include "../hdr/add.hpp"
 
-int add(const int x, const int y) {
+i32 add(const i32 x, const i32 y) {
     return x + y;
 }

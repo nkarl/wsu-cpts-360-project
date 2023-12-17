@@ -1,13 +1,15 @@
+#include "hdr/my_types.hpp"
+
 #include "utils.cc"
 
-int main(int argc, char *argv[]) {
+i32 main(i32 argc, i8 *argv[]) {
     test_boot_compile_link();
 
-    for (int i = 0; i < argc; ++i) {
+    for (i8 i = 0; i < argc; ++i) {
         printf("%d %s\n", i, argv[i]);
     }
 
-    char *diskname;
+    i8 *diskname;
     if (argc >= 1) {
         diskname = argv[1];
     }
@@ -17,6 +19,9 @@ int main(int argc, char *argv[]) {
 
     VDisk vdisk;
     vdisk.readSUPER(diskname);
+
+    printf("i32=%ld\ti64=%ld bytes\n", sizeof(i32), sizeof(i64));
+    printf("u32=%ld\tu64=%ld bytes\n", sizeof(u32), sizeof(u64));
 
     return 0;
 }

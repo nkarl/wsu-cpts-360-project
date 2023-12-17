@@ -1,7 +1,5 @@
-#include "hdr/add.hpp"
-#include "hdr/constants.hpp"
-#include "hdr/ext2fs.hpp"
-#include "hdr/sub.hpp"
+#include "hdr/my_types.hpp"
+
 #include <cassert>
 #include <ctime>
 #include <fcntl.h>
@@ -9,12 +7,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "hdr/add.hpp"
+#include "hdr/constants.hpp"
+#include "hdr/ext2fs.hpp"
+#include "hdr/sub.hpp"
+
 typedef struct ext2_super_block SUPER;
 
 struct VDisk {
-    int    fd;
-    int    blksize = constants::BLOCK_SIZE;
-    int    inodesize;
+    u32    fd;
+    u32    blksize = constants::BLOCK_SIZE;
+    u32    inodesize;
     SUPER *sp;
     char   buf[constants::BLOCK_SIZE];
 
@@ -24,7 +27,7 @@ struct VDisk {
             printf("open %sfailed\n", device);
             exit(1);
         }
-        lseek(fd, (long)1024 * 1, 0);  // block 1 on FD, offset 1024 on HD
+        lseek(fd, (i64)1024 * 1, 0);  // block 1 on FD, offset 1024 on HD
         read(fd, buf, 1024);
         sp = (SUPER *)buf;
         // as a super block structure
@@ -53,14 +56,14 @@ struct VDisk {
         print("s_max_mnt_count",
               sp->s_max_mnt_count);
         printf("%-30s = %8x\n", "s_magic", sp->s_magic);
-        printf("s_mtime = %s", std::ctime((long *)&sp->s_mtime));
-        printf("s_wtime = %s", std::ctime((long *)&sp->s_wtime));
+        printf("s_mtime = %s", std::ctime((i64 *)&sp->s_mtime));
+        printf("s_wtime = %s", std::ctime((i64 *)&sp->s_wtime));
         blksize = 1024 * (1 << sp->s_log_block_size);
         printf("block size = %d\n", blksize);
         printf("inode size = %d\n", sp->s_inode_size);
     }
 
-    void print(char const *s, unsigned int x) {
+    void print(i8 const *s, u32 x) {
         printf("%-30s = %8d\n", s, x);
     }
 };
