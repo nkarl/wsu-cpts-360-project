@@ -1,7 +1,7 @@
 #ifndef SUB_HPP
 #define SUB_HPP
 
-#include "my_types.hpp"
+#include "my-types.hpp"
 
 i32 sub(const i32, const i32);
 

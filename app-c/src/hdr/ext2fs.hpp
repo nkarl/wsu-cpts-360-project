@@ -3,7 +3,7 @@
 
 #define EXT2_NAME_LEN 256
 
-#include "my_types.hpp"
+#include "my-types.hpp"
 
 /* page 303 */
 struct ext2_super_block {
