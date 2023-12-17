@@ -1,6 +1,6 @@
 #include "hdr/my-types.hpp"
 
-#include "active-workspace.cc"
+#include "temp-workspace.cc"
 #include "test-runner.cc"
 
 i32 main(i32 argc, i8 *argv[]) {
@@ -9,6 +9,8 @@ i32 main(i32 argc, i8 *argv[]) {
     for (i8 i = 0; i < argc; ++i) {
         printf("%d %s\n", i, argv[i]);
     }
+
+    printf("blksize=%ld\n", sizeof(u32) * constants::BASE_BLOCK_SIZE);
 
     i8 *diskname;
     if (argc >= 1) {

@@ -76,7 +76,7 @@ struct ext2_dir_entry_2 {
 };
 
 /** MAILMAN Algorithm
- *      INODES_PER_BLOCK = BLOCK_SIZE / sizeof(INODE)
+ *      INODES_PER_BLOCK = BASE_BLOCK_SIZE / sizeof(INODE)
  *
  *      block = (ino -1) / INODES_PER_BLOCK + inode_table;
  *      inode = (ino -1) % INODES_PER_BLOCK;
