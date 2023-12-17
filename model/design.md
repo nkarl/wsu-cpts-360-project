@@ -7,26 +7,27 @@ This project is a system with two major components:
 
 ## The Virtual Disk Model
 
-- The virtual disk can be created via a command line (retrieves reference from KC's book).
+- The virtual disk (vdisk) can be created via a command line (retrieves reference from KC's book).
 
-- The virtual disk needs to be modeled into EX2 structures in C (retrieves references from KC's book).
+- The vdisk needs to be modeled into EXT4 structures in C (replacing the EXT2 structure from KC's book).
 	- These structures will hold information pertaining to records saved as data blocks on the vdisk.
 
-On every virtual disk the boot block (B-0) can be ignored. The relevent information start with B-1, the **super** block. The super block defines the disk structure. From a high-level view, data on disk is recorded as bytes. Bytes are grouped together as blocks. Blocks are grouped together as groups.
+On EXT4 there is no boot block (B-0 on EXT2). The first block containing relevent information start with B-0, the **SUPER** block. The **GROUP DESCRIPTOR** block immediately follows it, B-1. The super block defines the disk structure. From a high-level view, data on disk is recorded as bytes. Bytes are grouped together as blocks. Blocks are grouped together as groups.
 
-#### The Model of EXT2 File Systems
+#### The Model of EXT4 File Systems
 
 ```txt
 - a         disk :
-  - a      group : 8192 blocks maximum        , or 8 MB
-    - a    block : 1024 bytes                 , or 1 KB
-                 :    8 inodes
-      - a  inode :  128 bytes
-        - a byte :    1 unit of encoded data  ,    8 bits
+  - a      group : 32768 blocks maximum        , or 8 MB
+                     192 inodes maximum
+    - a    block :  4096 bytes                 , or 4 KB
+                 :    16 inodes
+      - an inode :   256 bytes
+        - a byte :     1 unit of encoded data  ,    8 bits
 ```
 
 #### Our Working Vdisk
-Our working virtual disk is instantiated as follows:
+Our working vdisk is instantiated as follows:
 
 ```txt
 1                 disk :
@@ -40,35 +41,37 @@ Our working virtual disk is instantiated as follows:
 
 ```sh
 # if:input file, of:output file, bs: number of bytes, count: number of blocks
-dd if=/dev/zero of=vdisk bs=1024 count=1440
+dd if=/dev/zero of=vdisk bs=4096 count=1440
 # 1440+0 records in
 # 1440+0 records out
-# 1474560 bytes (1.5 MB, 1.4 MiB) copied, 0.00197985 s, 745 MB/s
+# 5898240 bytes (5.9 MB, 5.6 MiB) copied, 0.0069426 s, 850 MB/s
+mke2fs 1.47.0 (5-Feb-2023)
+# Discarding device blocks: done                            
+# Creating filesystem with 360 4k blocks and 192 inodes
 
-mke2fs vdisk 1440
-# Creating filesystem with 1440 1k blocks and 176 inodes
+# Allocating group tables: done                            
+# Writing inode tables: done                            
+# Writing superblocks and filesystem accounting information: done
 ```
 
 #### The Layout of the Vdisk
 
 ```txt
-|    0 |     1 |  2 |  . . . 7 |    8 |    9 |  10  . . . 32 | 33 . . . 1439 | <- limit at disk creation
-| boot | super | GD | reserved | bmap | imap |        inodes |          data |
+|     0 |  1 | 2 . . . 6 |    7 |    8 | 9 . . . 31 | 32 . . . 360 | <- limit at disk creation
+| super | GD |  reserved | bmap | imap |     inodes |         data |
 ```
 
 <table>
   <tr>
     <th style='text-align:left'>0</th>
     <th style='text-align:left'>1</th>
-    <th style='text-align:left'>2</th>
-    <th style='text-align:left'>3..7</th>
+    <th style='text-align:left'>2..6</th>
+    <th style='text-align:left'>7</th>
     <th style='text-align:left'>8</th>
-    <th style='text-align:left'>9</th>
-    <th style='text-align:left'>10..32</th>
-    <th style='text-align:left'>33..1439</th>
+    <th style='text-align:left'>9..31</th>
+    <th style='text-align:left'>32..360</th>
   </tr>
   <tr>
-    <td style='background-color:gray'>boot</td>
     <td>super</td>
     <td>GD</td>
     <td style='background-color:gray'>reserved</td>
@@ -78,7 +81,6 @@ mke2fs vdisk 1440
     <td>data</td>
   </tr>
   <tr>
-    <td style='background-color:gray'></td>
     <td><code>0+1024 B</code>
       <hr>describes the disk.
     </td>
@@ -103,15 +105,15 @@ This section defines the interface model to get a disk's structural information.
 
 ```c
 // header definition
-#ifndef EXT2_FS_H
-#define EXT2_FS_H
+#ifndef EXT4_FS_H
+#define EXT4_FS_H
 
-#define EXT2_NAME_LEN 256
+#define EXT4_NAME_LEN 256
 ```
 
 ### B-01. the super block
 
-The **super** block holds the definition of the virtual disk. The structure with relevant attributes are defined below.
+The **super** block holds the definition of the vdisk. The structure with relevant attributes are defined below.
 
 ```c
 // typedef u8, u16, u32 SUPER for convenience
