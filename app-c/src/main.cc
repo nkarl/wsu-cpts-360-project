@@ -20,9 +20,9 @@ i32 main(i32 argc, i8 *argv[]) {
         exit(1);
     }
 
-    FileSystem::EXT2 vdisk(diskname);
+    FS::EXT2 vdisk(diskname);
     vdisk.readSUPER();
-    vdisk.readGD();
+    //vdisk.readGD();
 
     return 0;
 }

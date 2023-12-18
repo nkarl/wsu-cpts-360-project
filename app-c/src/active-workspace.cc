@@ -11,7 +11,7 @@
 
 #include "lib/utils.cc"
 
-namespace FileSystem {
+namespace FS {
     struct EXT2 {
         typedef struct ext2_block_super      SUPER;
         typedef struct ext2_block_group_desc GD;
@@ -96,4 +96,4 @@ namespace FileSystem {
             printf("%c", '\n');
         }
     };
-}  // namespace FileSystem
+}  // namespace FS
