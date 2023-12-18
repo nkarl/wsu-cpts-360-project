@@ -1,4 +1,4 @@
-#include "hdr/my-types.hpp"
+#include "hdr-locked/my-types.hpp"
 #include "tests/simple-arithmetic.cc"
 
 void test_runner() {

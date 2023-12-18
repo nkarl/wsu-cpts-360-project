@@ -1,4 +1,4 @@
-#include "hdr/my-types.hpp"
+#include "hdr-locked/my-types.hpp"
 
 #include <ctime>
 #include <fcntl.h>
@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "hdr/constants.hpp"
-#include "hdr/ext2fs.hpp"
+#include "hdr-locked/constants.hpp"
+#include "hdr-locked/ext2fs.hpp"
 
 #include "lib/utils.cc"
 
