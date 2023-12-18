@@ -197,12 +197,16 @@ struct ext2_inode {
 
 #### Plan
 
-1. [ ] In-memory mapping to access vdisk's SUPER and GD quickly.
-    - requires:
-        - [ ] pointer to the SUPER block, and corresponding memory allocation.
-        - [ ] pointer to the GD block, and corresponding memory allocation.
-    - memory is *cheap*, allocate `BASE_BLOCK_SIZE` to each.
-2. [ ] read the table of inodes from the GD pointer.
+- TODO:
+    1. Make note on the separation of different classes of functions, e.g. `FS::Show::EXT2::block_super()` separated from `FS::EXT2`.
+        - This is a way to implement functional interface (typeclass) in C++ by grouping functions into corresponding sub-namespaces.
+        - This allows for cleaner `struct` definition; a `struct` should only holds attributes.
+    2. [x] In-memory mapping to access vdisk's SUPER and GD quickly.
+        - requires:
+            - [x] pointer to the SUPER block, and corresponding memory allocation.
+            - [x] pointer to the GD block, and corresponding memory allocation.
+        - memory is *cheap*, allocate `BASE_BLOCK_SIZE` to each.
+    3. [ ] read the table of inodes from the GD pointer.
 
 #### Implementation
 
