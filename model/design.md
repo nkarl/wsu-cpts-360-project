@@ -5,7 +5,7 @@ This project is a system with two major components:
 2. the Shell program that mounts and loops on that vdisk.
 
 
-## The Virtual Disk Model
+## I. The Virtual Disk Model
 
 - The virtual disk (vdisk) can be created via a command line.
 
@@ -104,7 +104,7 @@ Writing superblocks and filesystem accounting information: done
   </tr>
 </table>
 
-## The Disk Structures
+## II. The Disk Structures
 
 This section defines the interface model to get a disk's structural information.
 
@@ -193,9 +193,16 @@ struct ext2_inode {
 };
 ```
 
-## Functional Interface
+## III. Functional Interface
 
 #### Plan
+
+1. [ ] In-memory mapping to access vdisk's SUPER and GD quickly.
+    - requires:
+        - [ ] pointer to the SUPER block, and corresponding memory allocation.
+        - [ ] pointer to the GD block, and corresponding memory allocation.
+    - memory is *cheap*, allocate `BASE_BLOCK_SIZE` to each.
+2. [ ] read the table of inodes from the GD pointer.
 
 #### Implementation
 
@@ -213,7 +220,7 @@ This function creates a *file* entry on the vdisk, and set content to of the fil
 
 
 
-## The Shell
+## IV. The Shell
 
 - The Shell is a runtime loop.
 - It will always wait for a commandline from the user, execute and loop back to wait again.
