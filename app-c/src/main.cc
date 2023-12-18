@@ -22,6 +22,7 @@ i32 main(i32 argc, i8 *argv[]) {
 
     FileSystem::EXT2 vdisk(diskname);
     vdisk.readSUPER();
+    vdisk.readGD();
 
     return 0;
 }
