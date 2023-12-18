@@ -10,7 +10,7 @@ obj_dir     		:= build/obj
 bin_dir     		:= build/bin
 
 ## compiled and assembled object output directory
-objects     		:= main.o add.o sub.o # add more *.o here
+objects     		:= main.o add.o sub.o
 objects     		:= ${addprefix ${obj_dir}/, ${objects}}
 
 ## binary output directory
@@ -60,4 +60,4 @@ ${obj_dir}/%.o  : ${lib}/%.cc
 ##################################################################
 .PHONY: clean
 clean:
-	rm -r ${build} ${obj_dir}/*
+	rm -r ${build} ${obj_dir}/* ${bin_dir}/*

@@ -1,6 +1,6 @@
 #include "hdr/my-types.hpp"
 
-#include "temp-workspace.cc"
+#include "active-workspace.cc"
 #include "test-runner.cc"
 
 i32 main(i32 argc, i8 *argv[]) {
@@ -20,8 +20,8 @@ i32 main(i32 argc, i8 *argv[]) {
         exit(1);
     }
 
-    FileSystem::EXT2 vdisk;
-    vdisk.readSUPER(diskname);
+    FileSystem::EXT2 vdisk(diskname);
+    vdisk.readSUPER();
 
     return 0;
 }
