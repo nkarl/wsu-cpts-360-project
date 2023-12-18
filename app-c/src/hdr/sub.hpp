@@ -3,6 +3,6 @@
 
 #include "my-types.hpp"
 
-i32 sub(const i32, const i32);
+i32 sub(i32 const, i32 const);
 
 #endif

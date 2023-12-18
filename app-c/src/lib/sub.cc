@@ -1,5 +1,5 @@
 #include "../hdr/sub.hpp"
 
-i32 sub(const i32 x, const i32 y) {
+i32 sub(i32 const x, i32 const y) {
     return x - y;
 }
