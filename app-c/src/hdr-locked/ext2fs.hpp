@@ -48,27 +48,27 @@ struct ext2_block_group_desc {
 
 /* page 304 */
 struct ext2_inode {
-    u16 i_mode        ; // 16 bits = |tttt|ugs|rwx|rwx|rwx|
-    u16 i_uid         ; // owner uid
-    u32 i_size        ; // file size in bytes
-    u32 i_atime       ; // time fields in seconds
-    u32 i_ctime       ; // since 00:00:00,1-1-1970
-    u32 i_mtime       ;
-    u32 i_dtime       ;
-    u16 i_gid         ; // group ID
-    u16 i_links_count ; // hard-link count
-    u32 i_blocks      ; // number of 512-byte sectors
-    u32 i_flags       ; // IGNORE
-    u32 i_reserved1   ; // IGNORE
+    u16 i_mode             ; // 16 bits = |tttt|ugs|rwx|rwx|rwx|
+    u16 i_uid              ; // owner uid
+    u32 i_size             ; // file size in bytes
+    u32 i_atime            ; // time fields in seconds
+    u32 i_ctime            ; // since 00:00:00,1-1-1970
+    u32 i_mtime            ;
+    u32 i_dtime            ;
 
-    u32 i_block[15]   ; // See details below
+    u16 i_gid              ; // group ID
+    u16 i_links_count      ; // hard-link count
+    u32 i_blocks           ; // number of 512-byte sectors
+    u32 i_flags            ; // IGNORE
+    u32 i_reserved1        ; // IGNORE
 
-    u32 i_pad[7]      ; // for inode size = 128 bytes
+    u32 i_block[15]        ; // See details below
+    u32 i_pad[7]           ; // for inode size = 128 bytes
 };
 
 /* page 305 */
 struct ext2_dir_entry_2 {
-    u32  inode               ; // inode number                      ; count from 1, NOT 0
+    u32  inode               ; // inode number; count from 1, NOT 0
     u16  rec_len             ; // this entry’s length in byte
     u8   name_len            ; // name length in bytes
     u8   file_type           ; // not used
