@@ -64,8 +64,8 @@ namespace FileSystem {
             printf("%-30s = %8x\n", "s_magic", sp->s_magic);
 
             printf("%c", '\n');
-            printf("%-30s = %s\n", "s_mtime", std::ctime((i64 *)&sp->s_mtime));
-            printf("%-30s = %s\n", "s_wtime", std::ctime((i64 *)&sp->s_wtime));
+            print("s_mtime", std::ctime((i64 *)&sp->s_mtime));
+            print("s_wtime", std::ctime((i64 *)&sp->s_wtime));
 
             blksize = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
             print("block size", blksize);
@@ -74,6 +74,10 @@ namespace FileSystem {
 
         void print(i8 const *s, u32 x) {
             printf("%-30s = %8d\n", s, x);
+        }
+
+        void print(i8 const *s, i8 const *x) {
+            printf("%-30s = %8s\n", s, x);
         }
     };
 }  // namespace FileSystem
