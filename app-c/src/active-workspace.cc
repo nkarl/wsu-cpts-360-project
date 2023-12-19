@@ -35,6 +35,11 @@ namespace FS {
             group_desc = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
         }
 
+        ~EXT2() {
+            delete super;
+            delete group_desc;
+        }
+
         /**
          *
          * reads disk information from the SUPER block.
