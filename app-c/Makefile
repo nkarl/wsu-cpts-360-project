@@ -10,7 +10,7 @@ obj_dir     		:= build/obj
 bin_dir     		:= build/bin
 
 ## compiled and assembled object output directory
-objects     		:= main.o add.o sub.o
+objects     		:= main.o utils.o add.o sub.o
 objects     		:= ${addprefix ${obj_dir}/, ${objects}}
 
 ## binary output directory

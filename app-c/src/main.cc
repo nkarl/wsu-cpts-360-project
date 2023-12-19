@@ -1,6 +1,6 @@
 #include "hdr-locked/my-types.hpp"
 
-#include "active-workspace.cc"
+#include "hdr-locked/my-fs.hpp"
 #include "test-runner.cc"
 
 i32 main(i32 argc, i8 *argv[]) {
@@ -19,7 +19,9 @@ i32 main(i32 argc, i8 *argv[]) {
     }
 
     FS::EXT2 vdisk(diskname);
+    FS::Read::EXT2::block_super(&vdisk);
     FS::Show::EXT2::block_super(&vdisk);
+    FS::Read::EXT2::block_group_desc(&vdisk);
     FS::Show::EXT2::block_group_desc(&vdisk);
 
     return 0;
