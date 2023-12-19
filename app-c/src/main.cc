@@ -10,8 +10,6 @@ i32 main(i32 argc, i8 *argv[]) {
         printf("%d %s\n", i, argv[i]);
     }
 
-    printf("blksize=%ld\n", sizeof(u32) * constants::BASE_BLOCK_SIZE);
-
     i8 *diskname;
     if (argc >= 1) {
         diskname = argv[1];
@@ -21,7 +19,8 @@ i32 main(i32 argc, i8 *argv[]) {
     }
 
     FS::EXT2 vdisk(diskname);
-    FS::Show::EXT2::block_super(vdisk);
+    FS::Show::EXT2::block_super(&vdisk);
+    FS::Show::EXT2::block_group_desc(&vdisk);
 
     return 0;
 }
