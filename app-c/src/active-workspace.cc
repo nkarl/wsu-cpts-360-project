@@ -12,15 +12,15 @@
 #include "lib/utils.cc"
 
 namespace FS {
-    struct EXT2 {
-        typedef struct ext2_block_super      SUPER;
-        typedef struct ext2_block_group_desc GD;
-        typedef struct ext2_inode            INODE;
-        typedef struct ext2_dir_entry_2      DIR_ENTRY;
+    typedef struct ext2_block_super      SUPER;
+    typedef struct ext2_block_group_desc GD;
+    typedef struct ext2_inode            INODE;
+    typedef struct ext2_dir_entry_2      DIR_ENTRY;
 
+    struct EXT2 {
         i8 *device;
-        u8  fd;
-        u16 blksize = constants::BASE_BLOCK_SIZE;
+        u32 fd;
+        u32 blksize = constants::BASE_BLOCK_SIZE;
         u32 inodesize;
         i8 *super;
         i8 *group_desc;
@@ -31,8 +31,10 @@ namespace FS {
                 printf("open %sfailed\n", device);
                 exit(1);
             }
-            super      = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
+            super = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
+            this->readSUPER();
             group_desc = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
+            this->readGD();
         }
 
         ~EXT2() {
@@ -46,11 +48,6 @@ namespace FS {
          *
          */
         void readSUPER() {
-            // i8 buf[constants::BASE_BLOCK_SIZE];
-            // lseek(fd, blksize * 1, SEEK_SET);  // block 0 on FD, offset by blksize on HD
-            // read(fd, buf, blksize);
-            // sp = (SUPER *)buf;
-
             lseek(fd, blksize * 1, SEEK_SET);
             read(fd, super, blksize);
             SUPER *sp = (SUPER *)super;
@@ -64,24 +61,6 @@ namespace FS {
             printf("EXT2 FS OK\n");
 
             blksize = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
-
-            print("s_inodes_count", sp->s_inodes_count);
-            print("s_blocks_count", sp->s_blocks_count);
-            print("s_r_blocks_count", sp->s_r_blocks_count);
-            print("s_free_inodes_count", sp->s_free_inodes_count);
-            print("s_free_blocks_count", sp->s_free_blocks_count);
-            print("s_first_data_block", sp->s_first_data_block);
-            print("s_log_block_size", sp->s_log_block_size);
-            print("s_blocks_per_group", sp->s_blocks_per_group);
-            print("s_inodes_per_group", sp->s_inodes_per_group);
-            print("s_mnt_count", sp->s_mnt_count);
-            print("s_max_mnt_count", sp->s_max_mnt_count);
-            print("s_magic", sp->s_magic);
-            print("s_mtime", std::ctime((i64 *)&sp->s_mtime));
-            print("s_wtime", std::ctime((i64 *)&sp->s_wtime));
-            print("block size", blksize);
-            print("inode size", sp->s_inode_size);
-            printf("%c", '\n');
         }
 
         /**
@@ -90,23 +69,52 @@ namespace FS {
          *
          */
         void readGD() {
-            // i8 buf[constants::BASE_BLOCK_SIZE];
-            // lseek(fd, blksize * 2, SEEK_SET);  // block 0 on FD, offset by blksize on HD
-            // read(fd, buf, blksize);
-            // gdp = (GD *)buf;
-
             lseek(fd, blksize * 2, SEEK_SET);
             read(fd, group_desc, blksize);
-            GD *gdp = (GD *)group_desc;
-
-            print("bg_block_bitmap", gdp->bg_block_bitmap);
-            print("bg_inode_bitmap", gdp->bg_inode_bitmap);
-            print("bg_inode_table", gdp->bg_inode_table);
-            print("bg_free_blocks_count", gdp->bg_free_blocks_count);
-            print("bg_free_inodes_count", gdp->bg_free_inodes_count);
-            print("bg_used_dirs_count", gdp->bg_used_dirs_count);
-            print("bg_pad", gdp->bg_pad);
-            print("bg_reserved", *gdp->bg_reserved);
         }
     };
+
+    namespace Show {
+        struct EXT2 {
+            static void block_super(FS::EXT2 const *const ext2) {
+                SUPER *sp = (SUPER *)(ext2->super);
+
+                printf("\nSUPER BLOCK\n");
+                printf("----------------------------------------------\n");
+                print("s_inodes_count", sp->s_inodes_count);
+                print("s_blocks_count", sp->s_blocks_count);
+                print("s_r_blocks_count", sp->s_r_blocks_count);
+                print("s_free_inodes_count", sp->s_free_inodes_count);
+                print("s_free_blocks_count", sp->s_free_blocks_count);
+                print("s_first_data_block", sp->s_first_data_block);
+                print("s_log_block_size", sp->s_log_block_size);
+                print("s_blocks_per_group", sp->s_blocks_per_group);
+                print("s_inodes_per_group", sp->s_inodes_per_group);
+                print("s_mnt_count", sp->s_mnt_count);
+                print("s_max_mnt_count", sp->s_max_mnt_count);
+                print("s_magic", sp->s_magic);
+                print("s_mtime", std::ctime((i64 *)&sp->s_mtime));
+                print("s_wtime", std::ctime((i64 *)&sp->s_wtime));
+                print("block size", ext2->blksize);
+                print("inode size", sp->s_inode_size);
+                printf("%c", '\n');
+            }
+
+            static void block_group_desc(FS::EXT2 const *const ext2) {
+                GD *gdp = (GD *)(ext2->group_desc);
+
+                printf("\nGD BLOCK\n");
+                printf("----------------------------------------------\n");
+                print("bg_block_bitmap", gdp->bg_block_bitmap);
+                print("bg_inode_bitmap", gdp->bg_inode_bitmap);
+                print("bg_inode_table", gdp->bg_inode_table);
+                print("bg_free_blocks_count", gdp->bg_free_blocks_count);
+                print("bg_free_inodes_count", gdp->bg_free_inodes_count);
+                print("bg_used_dirs_count", gdp->bg_used_dirs_count);
+                print("bg_pad", gdp->bg_pad);
+                print("bg_reserved", *gdp->bg_reserved);
+                printf("%c", '\n');
+            }
+        };
+    }  // namespace Show
 }  // namespace FS
