@@ -46,6 +46,12 @@ namespace FS {
 
     namespace Read {
         struct EXT2 {
+            static void inode(/* params */) {
+                /*
+                 * TODO: implement the logic to read the inode map.
+                 */
+            }
+
             /**
              *
              * reads disk information from the SUPER block.
@@ -59,14 +65,13 @@ namespace FS {
                 SUPER *sp = (SUPER *)super;
 
                 //  as a super block structure, check EXT2 FS magic number:
-                printf("%-30s = %8x ", "s_magic", sp->s_magic);
                 if (sp->s_magic != 0xEF53) {
                     printf("NOT an EXT2 FS\n");
                     exit(2);
                 }
                 printf("EXT2 FS OK\n");
 
-                blksize = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
+                ext2->blksize = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
             }
 
             /**
@@ -85,6 +90,11 @@ namespace FS {
 
     namespace Show {
         struct EXT2 {
+            /**
+             *
+             * shows the info of the super block of the given ext2.
+             *
+             */
             static void block_super(FS::EXT2 const *const ext2) {
                 SUPER *sp = (SUPER *)(ext2->super);
 
@@ -109,6 +119,11 @@ namespace FS {
                 printf("%c", '\n');
             }
 
+            /**
+             *
+             * shows the info of the gd block of the given ext2.
+             *
+             */
             static void block_group_desc(FS::EXT2 const *const ext2) {
                 GD *gdp = (GD *)(ext2->group_desc);
 
