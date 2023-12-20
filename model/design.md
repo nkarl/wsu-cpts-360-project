@@ -1,20 +1,26 @@
 
 This project is a system with two major components:
 
-1. a Virtual Disk (vdisk)
-2. the Shell program that mounts and loops on that vdisk.
-
+1. an EXT2 filesystem (or a vdisk)
+2. an *interactive* Shell program that
+	1. mounts, and
+	2. allows user interactions with the filesystem.
 
 ## I. The Virtual Disk Model
 
 - The virtual disk (vdisk) can be created via a command line.
 
+```sh
+dd if=/dev/zero of=vdisk bs=1024 count=1440
+```
+
 - The vdisk is modeled into EXT2 structures in C.
-	- These structures will hold information pertaining to records saved as data blocks on the vdisk.
+	- These structures holds information pertaining to file records.
+	- These file records are encoded as data blocks on the filesystem.
 
-On EXT2 the boot block is B-0. The first block containing relevent information to us start with B-1, the **SUPER** block. The **GROUP DESCRIPTOR** block immediately follows it, B-2. The **SUPER** block defines the disk structure. From a high-level view, data on disk is recorded as bytes. Bytes are grouped together as blocks. Blocks are grouped together as groups.
+On EXT2 systems the boot block is B-0. The actual block that contains information useful to us starts at B-1, the **SUPER** block. The **GROUP DESCRIPTOR** block immediately follows it, B-2. The SUPER block defines the disk structure. Data on disk is recorded as bytes. Bytes are grouped together as blocks. Blocks are grouped together as groups.
 
-#### The Model of EXT4 File Systems
+#### The Model of EXT2 File Systems
 
 ```txt
 - a         disk :
@@ -26,7 +32,7 @@ On EXT2 the boot block is B-0. The first block containing relevent information t
         - a byte :    1 unit of encoded data  ,    8 bits
 ```
 
-#### Our Working Vdisk
+#### The Specs of our Vdisk
 Our working vdisk is instantiated as follows:
 
 ```txt
@@ -37,7 +43,7 @@ Our working vdisk is instantiated as follows:
   23    inode blocks : (  33 - 10)
 ```
 
-#### Creating Our Working Vdisk
+#### Creating the Vdisk
 
 ```sh
 # if:input file, of:output file, bs: number of bytes, count: number of blocks
@@ -86,10 +92,10 @@ Writing superblocks and filesystem accounting information: done
   </tr>
   <tr>
     <td style='background-color:gray'></td>
-    <td><code>0+1024 B</code>
+    <td><code>1 * 1024 B</code>
       <hr>describes the disk.
     </td>
-    <td>&nbsp
+    <td><code>2 * 1024 B</code>
       <hr>describes the groups, each 8192 blocks.
     </td>
     <td style='background-color:gray'></td>
@@ -110,10 +116,10 @@ This section defines the interface model to get a disk's structural information.
 
 ```c
 // header definition
-#ifndef EXT4_FS_H
-#define EXT4_FS_H
+#ifndef EXT2_FS_H
+#define EXT2_FS_H
 
-#define EXT4_NAME_LEN 256
+#define EXT2_NAME_LEN 256
 ```
 
 ### B-01. the super block
@@ -195,47 +201,40 @@ struct ext2_inode {
 
 ## III. Functional Interface
 
-#### Plan
-
-- TODO:
-    1. Make note on the separation of different classes of functions, e.g. `FS::Show::EXT2::block_super()` separated from `FS::EXT2`.
-        - This is a way to implement functional interface (typeclass) in C++ by grouping functions into corresponding sub-namespaces.
-        - This allows for cleaner `struct` definition; a `struct` should only holds attributes.
-    2. [x] In-memory mapping to access vdisk's SUPER and GD quickly.
-        - requires:
-            - [x] pointer to the SUPER block, and corresponding memory allocation.
-            - [x] pointer to the GD block, and corresponding memory allocation.
-        - memory is *cheap*, allocate `BASE_BLOCK_SIZE` to each.
-    3. [ ] read the table of inodes from the GD pointer.
-
-#### Implementation
-
-##### 01. `ls`
-
-This function list relevant information about the entries in a directory.
-
-##### 02. `mkdir`
-
-This function creates an *directory* entry on the vdisk.
-
-##### 03. `touch`
-
-This function creates a *file* entry on the vdisk, and set content to of the file to the correct number of data bytes.
-
-
+1. We separate functions into typeclasses.
+	- e.g. `FS::Show::EXT2::block_super()` separated from `FS::EXT2`.
+	- This is a way to implement functional interface (typeclass) in C++. We group functions into corresponding sub-namespaces.
+	- This allows for cleaner `struct` definition; a `struct` should only holds attributes.
+2. We allocate persistent memory for the vdisk's SUPER and GD in order to access them quickly.
+	- memory is *cheap*, allocate `BASE_BLOCK_SIZE` to each.
+1. read the table of inodes from the GD pointer.
 
 ## IV. The Shell
 
-- The Shell is a runtime loop.
-- It will always wait for a commandline from the user, execute and loop back to wait again.
+- is a runtime loop.
+	- always waits for a commandline from the user, execute and loop back to wait again.
+- is an aggregation of various functions that are used to access, view and manipulate the filesystem and its records.
 
-### Shell Design & Implementation
+### Design 
 
 The shell will be implemented iteratively.
 
-The first phase is to provide an API that interface with the vdisk. This API will start with `ls` which maps disk blocks into correct file records. Similar commands will also be grouped into this phase. These commands are independent programs that can nbe executed to get or modify disk blocks on the vdisk.
+**The first phase** is to provide an API that interface with the vdisk. This API will start with `ls` which retrieve  the correct data block and maps disk blocks into the correct *directory entries*. Similar commands will also be grouped into this phase. These commands are independent programs that can ne executed to get or modify disk blocks on the vdisk.
 
-The second phase is to implement a scheme of process management for some commands. The simplest option is forking a process. More details will be explored later.
+**The second phase** is to implement a scheme of process management for some commands. The simplest is forking a process. More details will be explored later.
 
-Finally, these commands will be imported and used as a library of a shell program.
+**Finally**, these commands will be imported and packaged as a library in the form of a shell program.
 
+### Implementation
+
+##### 01. `ls`
+
+This function lists relevant information about the entries in a directory. It <u>does not</u> recurse into the child directory.
+
+##### 02. `mkdir`
+
+This function creates a *directory entry* on the vdisk.
+
+##### 03. `touch`
+
+This function creates a an empty *file entry* on the vdisk (0 for record length in bytes).
