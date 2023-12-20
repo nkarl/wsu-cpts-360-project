@@ -34,12 +34,12 @@ else ifeq (${CXX}, clang)
 	LINKER_FLAGS += ${MSG_CLG} ${OMPF} 
 endif
 
-
 ##################################################################
 ## BUILD DIRECTIVE                                              ##
 ##################################################################
+
 # 3. link *.o into a binary app.
-${app} 					: ${objects}
+${app} 					: ${objects} 
 	${CXX} ${LINKER_FLAGS} $^ -o $@
 
 # 2. compile the main code. 
@@ -54,10 +54,13 @@ ${obj_dir}/%.o  : ${tests}/%.cc
 ${obj_dir}/%.o  : ${lib}/%.cc
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
+# 0. set up the build directories
+$(info $(shell mkdir -p ${obj_dir} ${bin_dir}))
 
 ##################################################################
 ## CLEAN TASK                                                   ##
 ##################################################################
 .PHONY: clean
 clean:
-	rm -r ${build} ${obj_dir}/* ${bin_dir}/*
+	rm -r ${build} ${obj_dir} ${bin_dir}
+
