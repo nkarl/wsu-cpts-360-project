@@ -3,6 +3,7 @@
 
 - [ ] Write unit tests for reading the super block.
 - [ ] Write unit tests for reading the group descriptor.
+- [ ] Write a test build in the Makefile.
 
 ### Lower Priority
 
