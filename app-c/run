@@ -1,5 +1,0 @@
-make clean
-make
-APP=target/bin/app
-chmod +x $APP
-./$APP

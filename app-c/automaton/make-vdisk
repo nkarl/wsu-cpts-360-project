@@ -1,0 +1,7 @@
+# bs: converts and write UP TO bs BYTES at a time.
+WRITE_LIMIT=1024
+# Copies from `if` (input file) to `of` (output file). Each action has an upper limit of `bs`. Repeats for `count` blocks.
+dd if=/dev/zero of=vdisk bs=$WRITE_LIMIT count=1440
+# Converts the file with name `-l` into an EXT2/3/4 disk. Writes upt to `-b` number of blocks.
+mke2fs -c vdisk -b 1440
+

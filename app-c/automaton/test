@@ -1,0 +1,6 @@
+# make clean
+make test
+
+RUNNER=build/test/runner
+chmod +x $RUNNER
+./$RUNNER

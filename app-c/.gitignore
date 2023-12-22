@@ -1,6 +1,6 @@
+**/build/
 **target/
 **.out
-**.extra-lib/
 
 # Created by https://www.toptal.com/developers/gitignore/api/bazel
 # Edit at https://www.toptal.com/developers/gitignore?templates=bazel

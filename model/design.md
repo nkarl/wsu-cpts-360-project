@@ -1,67 +1,80 @@
 
 This project is a system with two major components:
 
-1. a Virtual Disk (vdisk)
-2. the Shell program that mounts and loops on that vdisk.
+1. an EXT2 filesystem (or a vdisk)
+2. an *interactive* Shell program that
+	1. mounts, and
+	2. allows user interactions with the filesystem.
 
+## I. The Virtual Disk Model
 
-## The Virtual Disk Model
+- The virtual disk (vdisk) can be created via a command line.
 
-- The virtual disk can be created via a command line (retrieves reference from KC's book).
+```sh
+dd if=/dev/zero of=vdisk bs=1024 count=1440
+```
 
-- The virtual disk needs to be modeled into EX2 structures in C (retrieves references from KC's book).
-	- These structures will hold information pertaining to records saved as data blocks on the vdisk.
+- The vdisk is modeled into EXT2 structures in C.
+	- These structures holds information pertaining to file records.
+	- These file records are encoded as data blocks on the filesystem.
 
-On every virtual disk the boot block (B-0) can be ignored. The relevent information start with B-1, the **super** block. The super block defines the disk structure. From a high-level view, data on disk is recorded as bytes. Bytes are grouped together as blocks. Blocks are grouped together as groups.
+On EXT2 systems the boot block is B-0. The actual block that contains information useful to us starts at B-1, the **SUPER** block. The **GROUP DESCRIPTOR** block immediately follows it, B-2. The SUPER block defines the disk structure. Data on disk is recorded as bytes. Bytes are grouped together as blocks. Blocks are grouped together as groups.
 
 #### The Model of EXT2 File Systems
 
 ```txt
 - a         disk :
-  - a      group : 8192 blocks maximum        , or 8 MB
+  - a      group : 8192 blocks maximum        , or 4 MB
+                    176 inodes maximum
     - a    block : 1024 bytes                 , or 1 KB
                  :    8 inodes
-      - a  inode :  128 bytes
+      - an inode :  128 bytes
         - a byte :    1 unit of encoded data  ,    8 bits
 ```
 
-#### Our Working Vdisk
-Our working virtual disk is instantiated as follows:
+#### The Specs of our Vdisk
+Our working vdisk is instantiated as follows:
 
 ```txt
-1                 disk :
-  1              group : 1440              blocks  ,             or ~1.4 MB (size of a floppy disk)
-    1440        blocks : (1440 - 33) * 1024 bytes  , B[33..1439] or ~1.4 MB of actual space for data
-      184       inodes : (  33 - 10) *    8 inodes , B[10..  32]
-       23 inode blocks : (  33 - 10)
+   1            disk :
+   1           group :  1440             blocks  ,             or ~1.4 MB (size of a floppy disk)
+1440          blocks : (1440 - 32) * 1024 bytes  , B[33..1439] or ~1.4 MB of actual space for data
+ 176          inodes : (1440 - 32) *    8 inodes , B[10..  32]
+  23    inode blocks : (  33 - 10)
 ```
 
-#### Creating Our Working Vdisk
+#### Creating the Vdisk
 
 ```sh
 # if:input file, of:output file, bs: number of bytes, count: number of blocks
 dd if=/dev/zero of=vdisk bs=1024 count=1440
-# 1440+0 records in
-# 1440+0 records out
-# 1474560 bytes (1.5 MB, 1.4 MiB) copied, 0.00197985 s, 745 MB/s
 
-mke2fs vdisk 1440
-# Creating filesystem with 1440 1k blocks and 176 inodes
+1440+0 records in
+1440+0 records out
+1474560 bytes (1.5 MB, 1.4 MiB) copied, 0.00430258 s, 343 MB/s
+mke2fs 1.47.0 (5-Feb-2023)
+Discarding device blocks: done                            
+Creating filesystem with 1440 1k blocks and 176 inodes
+
+Checking for bad blocks (read-only test): done                                                 
+Allocating group tables: done                            
+Writing inode tables: done                            
+Writing superblocks and filesystem accounting information: done
 ```
 
 #### The Layout of the Vdisk
 
 ```txt
-|    0 |     1 |  2 |  . . . 7 |    8 |    9 |  10  . . . 32 | 33 . . . 1439 | <- limit at disk creation
-| boot | super | GD | reserved | bmap | imap |        inodes |          data |
+|    0 |     1 |  2 | 3 . . . 7 |    8 |    9 | 10 . . . 32 | 33 . . . 1439 | <- limit at disk creation
+| boot | super | GD |  reserved | bmap | imap |      inodes |          data |
 ```
 
 <table>
   <tr>
-    <th style='text-align:left'>0</th>
+    <th style='text-align:left;background-color:gray'>0</th>
     <th style='text-align:left'>1</th>
     <th style='text-align:left'>2</th>
-    <th style='text-align:left'>3..7</th>
+    <th style='text-align:left;background-color:gray'>3..7</th>
     <th style='text-align:left'>8</th>
     <th style='text-align:left'>9</th>
     <th style='text-align:left'>10..32</th>
@@ -79,25 +92,25 @@ mke2fs vdisk 1440
   </tr>
   <tr>
     <td style='background-color:gray'></td>
-    <td><code>0+1024 B</code>
+    <td><code>1 * 1024 B</code>
       <hr>describes the disk.
     </td>
-    <td>&nbsp
+    <td><code>2 * 1024 B</code>
       <hr>describes the groups, each 8192 blocks.
     </td>
     <td style='background-color:gray'></td>
     <td><code>1439 b</code>
-      <hr>maps disk usage. 0 for FREE, 1 for IN_USE.
+      <hr>maps disk usage.<br><code>FREE=0<br>IN_USE=1</code>
     </td>
-    <td>184 nodes
-      <hr>maps file entries.<br><code>VALID = 0</code><br><code>INVALID = 1</code>
+    <td><code>176 b</code>
+      <hr>maps file entries.<br><code>VALID=0</code><br><code>INVALID=1</code>
     </td>
     <td><code>128 B</code> per inode</td>
     <td></td>
   </tr>
 </table>
 
-## The Disk Structures
+## II. The Disk Structures
 
 This section defines the interface model to get a disk's structural information.
 
@@ -111,7 +124,7 @@ This section defines the interface model to get a disk's structural information.
 
 ### B-01. the super block
 
-The **super** block holds the definition of the virtual disk. The structure with relevant attributes are defined below.
+The **super** block holds the definition of the vdisk. The structure with relevant attributes are defined below.
 
 ```c
 // typedef u8, u16, u32 SUPER for convenience
@@ -186,38 +199,42 @@ struct ext2_inode {
 };
 ```
 
-## Functional Interface
+## III. Functional Interface
 
-#### Plan
+1. We separate functions into typeclasses.
+	- e.g. `FS::Show::EXT2::block_super()` separated from `FS::EXT2`.
+	- This is a way to implement functional interface (typeclass) in C++. We group functions into corresponding sub-namespaces.
+	- This allows for cleaner `struct` definition; a `struct` should only holds attributes.
+2. We allocate persistent memory for the vdisk's SUPER and GD in order to access them quickly.
+	- memory is *cheap*, allocate `BASE_BLOCK_SIZE` to each.
+1. read the table of inodes from the GD pointer.
 
-#### Implementation
+## IV. The Shell
 
-##### 01. `ls`
+- is a runtime loop.
+	- always waits for a commandline from the user, execute and loop back to wait again.
+- is an aggregation of various functions that are used to access, view and manipulate the filesystem and its records.
 
-This function list relevant information about the entries in a directory.
-
-##### 02. `mkdir`
-
-This function creates an *directory* entry on the vdisk.
-
-##### 03. `touch`
-
-This function creates a *file* entry on the vdisk, and set content to of the file to the correct number of data bytes.
-
-
-
-## The Shell
-
-- The Shell is a runtime loop.
-- It will always wait for a commandline from the user, execute and loop back to wait again.
-
-### Shell Design & Implementation
+### Design 
 
 The shell will be implemented iteratively.
 
-The first phase is to provide an API that interface with the vdisk. This API will start with `ls` which maps disk blocks into correct file records. Similar commands will also be grouped into this phase. These commands are independent programs that can nbe executed to get or modify disk blocks on the vdisk.
+**The first phase** is to provide an API that interface with the vdisk. This API will start with `ls` which retrieve  the correct data block and maps disk blocks into the correct *directory entries*. Similar commands will also be grouped into this phase. These commands are independent programs that can ne executed to get or modify disk blocks on the vdisk.
 
-The second phase is to implement a scheme of process management for some commands. The simplest option is forking a process. More details will be explored later.
+**The second phase** is to implement a scheme of process management for some commands. The simplest is forking a process. More details will be explored later.
 
-Finally, these commands will be imported and used as a library of a shell program.
+**Finally**, these commands will be imported and packaged as a library in the form of a shell program.
 
+### Implementation
+
+##### 01. `ls`
+
+This function lists relevant information about the entries in a directory. It <u>does not</u> recurse into the child directory.
+
+##### 02. `mkdir`
+
+This function creates a *directory entry* on the vdisk.
+
+##### 03. `touch`
+
+This function creates a an empty *file entry* on the vdisk (0 for record length in bytes).
