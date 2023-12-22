@@ -1,6 +1,8 @@
 #include "../hdr-locked/my-types.hpp"
 #include "../hdr-locked/my-fs.hpp"
 
+#include "tests.hpp"
+
 #include <cassert>
 
 void test_fs_ext2_super_magic_number() {

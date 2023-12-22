@@ -8,16 +8,18 @@ src         		:= src
 lib             := src/lib
 build_lib     	:= build/lib
 build_main      := build/main
-build_test      := build/test
-
 ## compiled and assembled object output directory
 build_lib_o     := utils.o add.o sub.o
 build_lib_o     := ${addprefix ${build_lib}/, ${build_lib_o}}
-
 ## binary output directory
 app 						:= build/main/app
 
-runner 					:= build/test/runner
+tests           := src/tests
+build_tests     := build/tests
+build_runner    := build/test
+test_units_o    := fs.ext2-validation.o sample.arithmetic-operations.o
+test_units_o    := ${addprefix ${build_tests}/, ${test_units_o}}
+test_runner 		:= build/test/runner
 
 ## compiler flags
 CXX         		:= g++ # run make CXX=clang
@@ -64,14 +66,18 @@ ${build_lib}/%.o  : ${lib}/%.cc | setup
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
 .PHONY: test
-test 							: ${runner}
+test 							: ${test_runner}
 
 # 3. link *.o into a binary app.
-${runner} 			  : ${build_lib_o} build/test/runner.o
+${test_runner} 	  : ${build_lib_o} ${test_units_o} build/test/runner.o
 	${CXX} ${LINKER_FLAGS} $^ -o $@
 
-# 2. compile the main code. 
-${build_test}/%.o : src/test/%.cc | setup
+# 2. compile the runner code. 
+${build_runner}/%.o : src/test/%.cc | setup
+	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
+
+# 1. compile the unit test code.
+${build_tests}/%.o  : ${tests}/%.cc | setup
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
 # 1. compile the lib code.
@@ -81,7 +87,7 @@ ${build_lib}/%.o  : ${lib}/%.cc | setup # the `|` and the followed argument(s) s
 .PHONY: setup
 setup:
 # 0. set up the build directories
-	$(info $(shell mkdir -p ${build_lib} build/main/ build/test/))
+	$(info $(shell mkdir -p ${build_lib} build/main/ build/test/ build/tests/))
 
 ##################################################################
 ## CLEAN TASK                                                   ##
