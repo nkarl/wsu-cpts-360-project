@@ -12,7 +12,7 @@ using std::string;
 /**
  * Integration test. create a new disk and read from it.
  */
-void test_fs_ext2() {
+void _test_fs_ext2() {
     /**
      * SET UP
      */
@@ -26,16 +26,6 @@ void test_fs_ext2() {
 
         system(create_test_disk.c_str());
     }();
-
-    auto check_test_disk = []() -> void {
-        string check_test_disk{
-            "if [ -f test_disk ]; then "
-            "echo test_disk created successfully.;"
-            "else "
-            "echo test_disk does not exist.;"
-            "fi"};
-        system(check_test_disk.c_str());
-    };
 
     /**
      * TEST BODY
@@ -54,13 +44,19 @@ void test_fs_ext2() {
      */
     [=]()
         -> void {
-        string remove_test_disk{
-            "echo cleaning up the test...;"
-            //"if [ -f test_disk ]; then "
-            //"rm test_disk;"
-            //"fi"
-        };
-        system(remove_test_disk.c_str());
-        check_test_disk();
+        // string remove_test_disk{
+        //"echo cleaning up the test...;"
+        //"if [ -f test_disk ]; then "
+        //"rm test_disk;"
+        //"fi"
+        //};
+        // system(remove_test_disk.c_str());
     }();
+}
+
+void test_fs_ext2() {
+    struct Test test;
+    test.Header("test: EXT2 filesystem.");
+    test.Body(*_test_fs_ext2);
+    test.Footer();
 }

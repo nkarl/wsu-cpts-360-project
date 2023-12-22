@@ -69,7 +69,7 @@ namespace FS {
                     printf("NOT an EXT2 FS\n");
                     exit(2);
                 }
-                printf("EXT2 FS OK\n");
+                // printf("EXT2 FS OK\n");
 
                 ext2->blksize = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
                 return sp;
