@@ -37,6 +37,14 @@ endif
 ##################################################################
 ## BUILD DIRECTIVE                                              ##
 ##################################################################
+# TODO: figure out a way to select build target, aka either prod app or test runner. 
+#
+#.PHONY: target_app
+	#make app > target_app
+
+#.PHONY: target_test
+	#make runner > target_test
+
 .PHONY: app
 # 3. link *.o into a binary app.
 app 					    : ${build_lib_o} build/main/app.o
