@@ -65,7 +65,7 @@ namespace FS {
                 SUPER *sp = (SUPER *)super;
 
                 //  as a super block structure, check EXT2 FS magic number:
-                if (sp->s_magic != 0xEF53) {
+                if (sp->s_magic != constants::MAGIC_NUMBER) {
                     printf("NOT an EXT2 FS\n");
                     exit(2);
                 }

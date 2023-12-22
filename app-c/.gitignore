@@ -1,6 +1,7 @@
 **/build/
 **target/
 **.out
+**/test_disk
 
 # Created by https://www.toptal.com/developers/gitignore/api/bazel
 # Edit at https://www.toptal.com/developers/gitignore?templates=bazel
