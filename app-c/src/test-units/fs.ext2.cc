@@ -1,3 +1,4 @@
+#include "../hdr-locked/constants.hpp"
 #include "../hdr-locked/my-fs.hpp"
 #include "../hdr-locked/my-types.hpp"
 
@@ -9,33 +10,11 @@
 using std::string;
 
 /**
- * This is a vacuous test, but it will be future reference when we actually need mocking.
- */
-void test_fs_ext2_super_magic_number() {
-    /*
-     * 1. mock the FS::EXT2 struct
-     * 2. read the super_block and assert on the magic_number
-     */
-    assert((void("\nsuper magic_number"), 1 == 1));
-}
-
-/**
- * This is a vacuous test, but it will be future reference when we actually need mocking.
- */
-void test_fs_ext2_super_log_block_number() {
-    /*
-     * 1. mock the FS::EXT2 struct
-     * 2. read the super_block and assert on the log_block_number
-     */
-    assert((void("\nsuper log_block_number"), 1 == 1));
-}
-
-/**
  * Integration test. create a new disk and read from it.
  */
 void test_fs_ext2() {
     /**
-     * SETUP
+     * SET UP
      */
     []() -> void {
         string create_test_disk{
@@ -58,22 +37,23 @@ void test_fs_ext2() {
         system(check_test_disk.c_str());
     };
 
+    /**
+     * TEST BODY
+     */
     {
-        /**
-         *
-         * TODO:
-         *  - [ ] write test to open and read from the test_disk
-         *  - [ ] assert magic_number
-         *  - [ ] assert log_block_number reduces to 1024 blocksize
-         *
-         */
+        i8 const *const diskname = "test_disk";
+        FS::EXT2        vdisk(diskname);
+        FS::SUPER      *sp = FS::Read::EXT2::block_super(&vdisk);
+
+        assert(sp->s_magic == constants::MAGIC_NUMBER);
+        assert(sp->s_log_block_size == 0);  // 0 for ext2
     }
 
-        /**
-         * TEARDOWN
-         */
-        [=]()
-            ->void {
+    /**
+     * TEAR DOWN
+     */
+    [=]()
+        -> void {
         string remove_test_disk{
             "echo cleaning up the test...;"
             //"if [ -f test_disk ]; then "
@@ -82,6 +62,5 @@ void test_fs_ext2() {
         };
         system(remove_test_disk.c_str());
         check_test_disk();
-    }
-    ();
+    }();
 }

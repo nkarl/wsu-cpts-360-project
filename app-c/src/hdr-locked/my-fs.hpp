@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include <unistd.h>
 
 #include "constants.hpp"
@@ -21,21 +22,22 @@ namespace FS {
     typedef struct ext2_dir_entry_2      DIR_ENTRY;
 
     struct EXT2 {
-        i8 *device;
-        i32 fd;
-        i32 blksize = constants::BASE_BLOCK_SIZE;
-        i32 inodesize;
-        i8 *super;
-        i8 *group_desc;
+        std::string device_name;
+        i32         fd;
+        i32         blksize = constants::BASE_BLOCK_SIZE;
+        i32         inodesize;
+        i8         *super;
+        i8         *group_desc;
 
-        EXT2(i8 *device) : device(device) {
-            fd = open(device, O_RDONLY);
+        EXT2(i8 const *const device_name) : device_name(device_name) {
+            fd = open(device_name, O_RDONLY);
             if (fd < 0) {
-                printf("open %sfailed\n", device);
+                printf("open %sfailed\n", device_name);
                 exit(1);
             }
-            super      = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
-            group_desc = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
+
+            this->super      = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
+            this->group_desc = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
         }
 
         ~EXT2() {
@@ -53,11 +55,9 @@ namespace FS {
             }
 
             /**
-             *
              * reads disk information from the SUPER block.
-             *
              */
-            static void block_super(FS::EXT2 *ext2) {
+            static SUPER *block_super(FS::EXT2 *ext2) {
                 i32 fd = ext2->fd, blksize = ext2->blksize;
                 i8 *super = ext2->super;
                 lseek(fd, blksize * 1, SEEK_SET);
@@ -72,12 +72,11 @@ namespace FS {
                 printf("EXT2 FS OK\n");
 
                 ext2->blksize = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
+                return sp;
             }
 
             /**
-             *
              * reads group information from the GD block.
-             *
              */
             static void block_group_desc(FS::EXT2 *ext2) {
                 i32 fd = ext2->fd, blksize = ext2->blksize;
@@ -91,9 +90,7 @@ namespace FS {
     namespace Show {
         struct EXT2 {
             /**
-             *
              * shows the info of the super block of the given ext2.
-             *
              */
             static void block_super(FS::EXT2 const *const ext2) {
                 SUPER *sp = (SUPER *)(ext2->super);
@@ -120,9 +117,7 @@ namespace FS {
             }
 
             /**
-             *
              * shows the info of the gd block of the given ext2.
-             *
              */
             static void block_group_desc(FS::EXT2 const *const ext2) {
                 GD *gdp = (GD *)(ext2->group_desc);

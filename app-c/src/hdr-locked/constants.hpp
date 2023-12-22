@@ -4,7 +4,8 @@
 #include "my-types.hpp"
 
 namespace constants {
-    constexpr u16 BASE_BLOCK_SIZE = 1024;
-}
+    constexpr u32 BASE_BLOCK_SIZE = 1024;
+    constexpr u16 MAGIC_NUMBER    = 0xef53;
+}  // namespace constants
 
 #endif
