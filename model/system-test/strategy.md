@@ -13,7 +13,7 @@ vdisk
 program
 subgraph mount_point[Mount Point]
     subgraph super_block[Super Block]
-        magic_number["magic number <code>0xFE53</code>?"]
+        magic_number["magic number <code>0xef53</code>?"]
         log_block_number["EXT2 or EXT4?"]
     end
     disk_name[disk name]
@@ -21,8 +21,8 @@ subgraph mount_point[Mount Point]
     super_block[SUPER block]
     disk_name -->|open and read <strong>into</strong>|i8_buffer
     i8_buffer -->|typecast <strong>as</strong>| super_block
-    subgraph unit_test[Unit Test on <code>0xFE53</code>]
-        magic_number -->|<code>magic_number == 0xFE53</code>| isMagic[<code>assert</code> is magic num]
+    subgraph unit_test[Unit Test on <code>0xef53</code>]
+        magic_number -->|<code>magic_number == 0xef53</code>| isMagic[<code>assert</code> is magic num]
         log_block_number -->|"<code>log_block_number == 0</code>"| isEXT2[<code>assert</code> is EXT2]
     end
 end
