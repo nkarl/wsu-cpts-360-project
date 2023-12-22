@@ -10,12 +10,12 @@ struct Test {
         printf("- %s", header.c_str());
     }
 
-    void Body(void (*test)()) {
-        test();
+    bool Body(bool (*test)()) {
+        return test();
     }
 
-    void Footer() {
-        printf("%50c [x]", 0);
+    void Footer(bool result) {
+        printf(result ? "%50c [x]" : "%50c [ ]", 0);
     }
 };
 

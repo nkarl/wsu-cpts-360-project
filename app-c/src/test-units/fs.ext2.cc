@@ -12,7 +12,7 @@ using std::string;
 /**
  * Integration test. create a new disk and read from it.
  */
-void _test_fs_ext2() {
+bool _test_fs_ext2() {
     /**
      * SET UP
      */
@@ -52,11 +52,15 @@ void _test_fs_ext2() {
         //};
         // system(remove_test_disk.c_str());
     }();
+    return true;
 }
 
+/**
+ * test executor.
+ */
 void test_fs_ext2() {
     struct Test test;
-    test.Header("test: EXT2 filesystem.");
-    test.Body(*_test_fs_ext2);
-    test.Footer();
+    test.Header("test: confirms EXT2 filesystem.");
+    bool result = test.Body(*_test_fs_ext2);
+    test.Footer(result);
 }
