@@ -47,20 +47,21 @@ endif
 
 .PHONY: app
 # 3. link *.o into a binary app.
-app 					    : ${build_lib_o} build/main/app.o
+${app} 					  : ${build_lib_o} build/main/app.o
 	${CXX} ${LINKER_FLAGS} $^ -o $@
 
 # 2. compile the main code. 
-${build_main}/%.o : src/main/%.cc
+${build_main}/%.o : src/main/%.cc | setup
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
 # 1. compile the lib code.
-${build_lib}/%.o  : ${lib}/%.cc 
+${build_lib}/%.o  : ${lib}/%.cc | setup
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
 .PHONY: setup
+setup:
 # 0. set up the build directories
-$(info $(shell mkdir -p ${build_lib} build/main/))
+	$(info $(shell mkdir -p ${build_lib} build/main/))
 
 ##################################################################
 ## CLEAN TASK                                                   ##
