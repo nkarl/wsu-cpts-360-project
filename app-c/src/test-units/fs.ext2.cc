@@ -1,7 +1,7 @@
 #include "../hdr-locked/my-fs.hpp"
 #include "../hdr-locked/my-types.hpp"
 
-#include "tests.hpp"
+#include "all-tests.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -39,9 +39,11 @@ void test_fs_ext2() {
      */
     []() -> void {
         string create_test_disk{
+            "if [ ! -f test_disk ]; then "
             "WRITE_LIMIT=1024;"
             "dd if=/dev/zero of=test_disk bs=$WRITE_LIMIT count=1440;"
-            "mke2fs -c test_disk -b 1440;"};
+            "mke2fs -c test_disk -b 1440;"
+            "fi"};
 
         system(create_test_disk.c_str());
     }();
@@ -68,15 +70,16 @@ void test_fs_ext2() {
     }
 
         /**
-         * CLEANUP
+         * TEARDOWN
          */
         [=]()
             ->void {
         string remove_test_disk{
             "echo cleaning up the test...;"
-            "if [ -f test_disk ]; then "
-            "rm test_disk;"
-            "fi"};
+            //"if [ -f test_disk ]; then "
+            //"rm test_disk;"
+            //"fi"
+        };
         system(remove_test_disk.c_str());
         check_test_disk();
     }

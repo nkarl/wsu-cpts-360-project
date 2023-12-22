@@ -12,8 +12,11 @@ target_main     := build/main
 src_lib         := src/lib
 build_lib     	:= ${target_main}/lib
 build_main      := ${target_main}
+
 build_lib_o     := utils.o add.o sub.o
+
 build_lib_o     := ${addprefix ${build_lib}/, ${build_lib_o}}
+
 app 						:= ${target_main}/app
 
 # build unit tests and runner
@@ -23,8 +26,11 @@ target_test     := build/test
 src_test_units  := src/test-units
 build_units     := ${target_test}/units
 build_runner    := ${target_test}
-test_units_o    := fs.ext2-validation.o sample.arithmetic-operations.o
+
+test_units_o    := fs.ext2.o
+
 test_units_o    := ${addprefix ${build_units}/, ${test_units_o}}
+
 test_runner     := ${target_test}/runner
 
 ## compiler flags
