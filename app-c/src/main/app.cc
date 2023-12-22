@@ -1,10 +1,7 @@
-#include "hdr-locked/my-types.hpp"
-
-#include "hdr-locked/my-fs.hpp"
-#include "test-runner.cc"
+#include "../hdr-locked/my-types.hpp"
+#include "../hdr-locked/my-fs.hpp"
 
 i32 main(i32 argc, i8 *argv[]) {
-    test_runner();
 
     for (i8 i = 0; i < argc; ++i) {
         printf("%d %s\n", i, argv[i]);

@@ -4,17 +4,17 @@
 ## project directories
 hdr       			:= src/hdr
 src         		:= src
+
 lib             := src/lib
-tests           := src/tests
-obj_dir     		:= build/obj
-bin_dir     		:= build/bin
+build_lib     	:= build/lib
+build_main      := build/main
 
 ## compiled and assembled object output directory
-objects     		:= main.o utils.o add.o sub.o
-objects     		:= ${addprefix ${obj_dir}/, ${objects}}
+build_lib_o     := utils.o add.o sub.o
+build_lib_o     := ${addprefix ${build_lib}/, ${build_lib_o}}
 
 ## binary output directory
-app 						:= ${bin_dir}/app
+app 						:= build/main/app
 
 ## compiler flags
 CXX         		:= g++ # run make CXX=clang
@@ -37,30 +37,27 @@ endif
 ##################################################################
 ## BUILD DIRECTIVE                                              ##
 ##################################################################
-
+.PHONY: app
 # 3. link *.o into a binary app.
-${app} 					: ${objects} 
+app 					    : ${build_lib_o} build/main/app.o
 	${CXX} ${LINKER_FLAGS} $^ -o $@
 
 # 2. compile the main code. 
-${obj_dir}/%.o 	: ${src}/%.cc
-	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
-
-# 1. compile the lib test code.
-${obj_dir}/%.o  : ${tests}/%.cc
+${build_main}/%.o : src/main/%.cc
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
 # 1. compile the lib code.
-${obj_dir}/%.o  : ${lib}/%.cc
+${build_lib}/%.o  : ${lib}/%.cc 
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
+.PHONY: setup
 # 0. set up the build directories
-$(info $(shell mkdir -p ${obj_dir} ${bin_dir}))
+$(info $(shell mkdir -p ${build_lib} build/main/))
 
 ##################################################################
 ## CLEAN TASK                                                   ##
 ##################################################################
 .PHONY: clean
 clean:
-	rm -r ${build} ${obj_dir} ${bin_dir}
+	rm -r build/
 
