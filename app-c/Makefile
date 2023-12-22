@@ -13,7 +13,7 @@ src_lib         := src/lib
 build_lib     	:= ${target_main}/lib
 build_main      := ${target_main}
 
-build_lib_o     := utils.o add.o sub.o
+build_lib_o     := utils.o
 
 build_lib_o     := ${addprefix ${build_lib}/, ${build_lib_o}}
 
