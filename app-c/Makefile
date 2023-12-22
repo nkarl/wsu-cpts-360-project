@@ -75,7 +75,7 @@ ${build_test}/%.o : src/test/%.cc | setup
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
 # 1. compile the lib code.
-${build_lib}/%.o  : ${lib}/%.cc | setup
+${build_lib}/%.o  : ${lib}/%.cc | setup # the `|` and the followed argument(s) signifies required step(s)
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
 .PHONY: setup
