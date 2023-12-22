@@ -12,3 +12,6 @@
 
 ### Lower Priority
 
+- [ ] Write a note on design choice for data types (i8, u8, i32, u32,...) for efficient byte array decoding/encoding
+- [ ] Write a note on design choice using both `i8 *` and `std::string`
+
