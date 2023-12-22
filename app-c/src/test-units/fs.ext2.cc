@@ -59,8 +59,7 @@ bool _test_fs_ext2() {
  * test executor.
  */
 void test_fs_ext2() {
-    struct Test test;
-    test.Header("test: confirms EXT2 filesystem.");
-    bool result = test.Body(*_test_fs_ext2);
-    test.Footer(result);
+    Test::Header("test: confirms EXT2 filesystem.");
+    bool result = Test::Body(*_test_fs_ext2);
+    Test::Footer(result);
 }

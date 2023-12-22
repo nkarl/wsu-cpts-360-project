@@ -6,15 +6,15 @@
 
 struct Test {
 
-    void Header(std::string header) {
+    static void Header(std::string header) {
         printf("- %s", header.c_str());
     }
 
-    bool Body(bool (*test)()) {
+    static bool Body(bool (*test)()) {
         return test();
     }
 
-    void Footer(bool result) {
+    static void Footer(bool result) {
         printf(result ? "%50c [x]" : "%50c [ ]", 0);
     }
 };
