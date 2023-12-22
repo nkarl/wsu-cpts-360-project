@@ -3,7 +3,7 @@
 
 i32 main(i32 argc, i8 *argv[]) {
 
-    for (i8 i = 0; i < argc; ++i) {
+    for (i32 i = 0; i < argc; ++i) {
         printf("%d %s\n", i, argv[i]);
     }
 

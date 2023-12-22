@@ -22,9 +22,9 @@ namespace FS {
 
     struct EXT2 {
         i8 *device;
-        u32 fd;
-        u32 blksize = constants::BASE_BLOCK_SIZE;
-        u32 inodesize;
+        i32 fd;
+        i32 blksize = constants::BASE_BLOCK_SIZE;
+        i32 inodesize;
         i8 *super;
         i8 *group_desc;
 
@@ -58,7 +58,7 @@ namespace FS {
              *
              */
             static void block_super(FS::EXT2 *ext2) {
-                u32 fd = ext2->fd, blksize = ext2->blksize;
+                i32 fd = ext2->fd, blksize = ext2->blksize;
                 i8 *super = ext2->super;
                 lseek(fd, blksize * 1, SEEK_SET);
                 read(fd, super, blksize);
@@ -80,7 +80,7 @@ namespace FS {
              *
              */
             static void block_group_desc(FS::EXT2 *ext2) {
-                u32 fd = ext2->fd, blksize = ext2->blksize;
+                i32 fd = ext2->fd, blksize = ext2->blksize;
                 GD *group_desc = (GD *)ext2->group_desc;
                 lseek(fd, blksize * 2, SEEK_SET);
                 read(fd, group_desc, blksize);

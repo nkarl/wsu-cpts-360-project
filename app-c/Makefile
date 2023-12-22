@@ -31,7 +31,7 @@ test_runner     := ${target_test}/runner
 ##################################################################
 CXX             := g++ # run make CXX=clang
 
-COMPILER_FLAGS  := -I${hdr}
+COMPILER_FLAGS  := -I${hdr} -Wall -Wextra -Wconversion -Wpedantic
 LINKER_FLAGS    :=
 
 MSG_GCC         := -DMESSAGE="Compiled with GCC"
