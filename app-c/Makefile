@@ -1,27 +1,34 @@
 ##################################################################
-## MAKEFILE                                                     ##
+## MAKEFILE                                                    ##
 ##################################################################
 ## project directories
 hdr       			:= src/hdr
 src         		:= src
 
-lib             := src/lib
-build_lib     	:= build/lib
-build_main      := build/main
-## compiled and assembled object output directory
+# build main app
+##################################################################
+target_main     := build/main
+
+src_lib         := src/lib
+build_lib     	:= ${target_main}/lib
+build_main      := ${target_main}
 build_lib_o     := utils.o add.o sub.o
 build_lib_o     := ${addprefix ${build_lib}/, ${build_lib_o}}
-## binary output directory
-app 						:= build/main/app
+app 						:= ${target_main}/app
 
-tests           := src/tests
-build_tests     := build/tests
-build_runner    := build/test
+# build unit tests and runner
+##################################################################
+target_test     := build/test
+
+src_test_units  := src/test-units
+build_units     := ${target_test}/units
+build_runner    := ${target_test}
 test_units_o    := fs.ext2-validation.o sample.arithmetic-operations.o
-test_units_o    := ${addprefix ${build_tests}/, ${test_units_o}}
-test_runner 		:= build/test/runner
+test_units_o    := ${addprefix ${build_units}/, ${test_units_o}}
+test_runner 		:= ${target_test}/runner
 
 ## compiler flags
+##################################################################
 CXX         		:= g++ # run make CXX=clang
 
 COMPILER_FLAGS  := -I${hdr}
@@ -40,57 +47,52 @@ else ifeq (${CXX}, clang)
 endif
 
 ##################################################################
-## BUILD DIRECTIVE                                              ##
+## BUILD RECIPES                                               ##
 ##################################################################
-# TODO: figure out a way to select build target, aka either prod app or test runner. 
-#
-#.PHONY: target_app
-	#make app > target_app
-
-#.PHONY: target_test
-	#make runner > target_test
 
 .PHONY: app
-app : ${app}
+##################################################################
+app: ${app}
 
 # 3. link *.o into a binary app.
 ${app} 					  : ${build_lib_o} build/main/app.o
 	${CXX} ${LINKER_FLAGS} $^ -o $@
 
 # 2. compile the main code. 
-${build_main}/%.o : src/main/%.cc | setup
-	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
-
-# 1. compile the lib code.
-${build_lib}/%.o  : ${lib}/%.cc | setup
+${build_main}/%.o : src/main/%.cc | setup build_lib
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
 .PHONY: test
-test 							: ${test_runner}
+##################################################################
+test: ${test_runner}
 
 # 3. link *.o into a binary app.
-${test_runner} 	  : ${build_lib_o} ${test_units_o} build/test/runner.o
+${test_runner} 	    : ${build_lib_o} ${test_units_o} build/test/runner.o
 	${CXX} ${LINKER_FLAGS} $^ -o $@
 
 # 2. compile the runner code. 
 ${build_runner}/%.o : src/test/%.cc | setup
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
-# 1. compile the unit test code.
-${build_tests}/%.o  : ${tests}/%.cc | setup
+# 2. compile the unit test code.
+${build_units}/%.o  : ${src_test_units}/%.cc | setup build_lib
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
+.PHONY: build_lib
+##################################################################
+build_lib:
 # 1. compile the lib code.
-${build_lib}/%.o  : ${lib}/%.cc | setup # the `|` and the followed argument(s) signifies required step(s)
+${build_lib}/%.o    : ${src_lib}/%.cc | setup # the `|` and the followed argument(s) signifies required step(s)
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
 .PHONY: setup
+##################################################################
 setup:
 # 0. set up the build directories
-	$(info $(shell mkdir -p ${build_lib} build/main/ build/test/ build/tests/))
+	$(info $(shell mkdir -p ${build_lib} ${build_units}))
 
 ##################################################################
-## CLEAN TASK                                                   ##
+## CLEAN TASK                                                  ##
 ##################################################################
 .PHONY: clean
 clean:
