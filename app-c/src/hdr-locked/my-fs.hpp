@@ -25,15 +25,15 @@ namespace FS {
 
     struct EXT2 {
         std::string device_name;
-        i32         fd;
-        i32         blksize;
+        i32         fd      = -1;
+        u32         blksize = constants::BASE_BLOCK_SIZE;
         i32         inodesize;
 
         i8 *super_block      = nullptr;
         i8 *group_desc_block = nullptr;
         i8 *imap             = nullptr;
 
-        EXT2(i8 const *const device_name) : fd(-1), blksize(constants::BASE_BLOCK_SIZE), device_name(device_name) {
+        EXT2(i8 const *const device_name) : device_name(device_name) {
             fd = open(device_name, O_RDONLY);
             if (fd < 0) {
                 printf("open %sfailed\n", device_name);
@@ -57,8 +57,8 @@ namespace FS {
             /**
              * read the block in to a buffer
              */
-            static i32 read_block(i32 fd, i32 block_num, i8 *buffer) {
-                lseek(fd, (i64)block_num * constants::BASE_BLOCK_SIZE, SEEK_SET);
+            static size_t read_block(i32 fd, u32 block_num, i8 *buffer) {
+                lseek(fd, block_num * constants::BASE_BLOCK_SIZE, SEEK_SET);
                 return read(fd, buffer, constants::BASE_BLOCK_SIZE);
             }
 
@@ -124,7 +124,7 @@ namespace FS {
 
                 i8 *imap = ext2->imap;
                 printf("\nimap: as bit-string array\n");
-                for (i32 i = 0; i <= num_inodes / 8; ++i) {
+                for (u32 i = 0; i <= num_inodes / 8; ++i) {
                     printf("%02x ", (u8)imap[i]);
                 }
             }
@@ -135,7 +135,7 @@ namespace FS {
 
                 i8 *imap = ext2->imap;
                 printf("\nimap: as hex array\n");
-                for (i32 i = 0; i <= num_inodes / 8; ++i) {
+                for (u32 i = 0; i <= num_inodes / 8; ++i) {
                     printf("%02x ", (u8)imap[i]);
                 }
             }
