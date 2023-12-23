@@ -27,6 +27,7 @@ bool _test_fs_ext2() {
         system(create_test_disk.c_str());
     }();
 
+
     /**
      * TEST BODY
      */
@@ -59,6 +60,15 @@ bool _test_fs_ext2() {
  * test executor.
  */
 void test_fs_ext2() {
+    /**
+     * extra information
+     */
+    {
+        printf("sizeof SUPER%10c     :=%ld bytes\n", 0, sizeof(FS::SUPER));
+        printf("sizeof INODE%10c     :=%ld bytes\n", 0, sizeof(FS::INODE));
+        printf("sizeof DIR_ENTRY%10c :=%ld bytes\n", 0, sizeof(FS::DIR_ENTRY));
+        printf("\n");
+    }
     Test::Header("test: confirms EXT2 filesystem.");
     bool result = Test::Body(*_test_fs_ext2);
     Test::Footer(result);
