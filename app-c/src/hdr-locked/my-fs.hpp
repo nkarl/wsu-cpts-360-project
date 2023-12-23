@@ -10,6 +10,8 @@
 #include <string>
 #include <unistd.h>
 
+#include <assert.h>
+
 #include <ext2fs/ext2_fs.h>
 
 #include "constants.hpp"
@@ -111,25 +113,42 @@ namespace FS {
     namespace Show {
         struct EXT2 {
 
+            static u8 *hex2bitstring(i8 value) {
+                u8 *bitstring = (u8 *)malloc(sizeof(u8) * 8);
+                for (i8 i = 0; i < 8; ++i) {
+                    bitstring[i] = ((1 << (i % 8)) & (value)) >> (i % 8);
+                }
+                return bitstring;
+            }
+
             /**
              * TODO: magnify the `imap` byte array (23 bytes) and expand it into a bit map (23 * 8 bits).
+             *  - [ ] for each hex value, make an i8 bitstring.
              *  - [ ] construct the mailman's algorithm from
              *      - a bit mask
              *      - a bit setting method
              *      - a bit clearing method
              */
-            static void imap(FS::EXT2 const *const ext2, const i8 *const) {
+            static void imap(FS::EXT2 const *const ext2) {
                 SUPER *sp         = (SUPER *)(ext2->super_block);
                 u32    num_inodes = sp->s_inodes_count;
+
+                std::string bitmap;
 
                 i8 *imap = ext2->imap;
                 printf("\nimap: as bit-string array\n");
                 for (u32 i = 0; i <= num_inodes / 8; ++i) {
-                    printf("%02x ", (u8)imap[i]);
+                    printf("\tbytes[%02d] %02x ", i + 1, (u8)imap[i]);
+                    u8 *bitstring = hex2bitstring((u8)imap[i]);
+                    for (u32 j = 0; j < 8; ++j) {
+                        printf("%b ", bitstring[j]);
+                    }
+                    printf("\n");
+                    delete(bitstring);
                 }
             }
 
-            static void imap(FS::EXT2 const *const ext2) {
+            static void imap(FS::EXT2 const *const ext2, const i8 *const) {
                 SUPER *sp         = (SUPER *)(ext2->super_block);
                 u32    num_inodes = sp->s_inodes_count;
 
