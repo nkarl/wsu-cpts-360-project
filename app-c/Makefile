@@ -44,10 +44,10 @@ MSG_GCC         := -DMESSAGE="Compiled with GCC"
 MSG_CLG         := -DMESSAGE="Compiled with Clang"
 
 
-ifeq (${CXX}, gcc)
+ifeq (${CXX}, g++)
 	OMPF         := -fopenmp
 	LINKER_FLAGS += ${MSG_GCC} ${OMPF}
-else ifeq (${CXX}, clang)
+else ifeq (${CXX}, clang++)
 	#OMPF         :=
 	LINKER_FLAGS += ${MSG_CLG} ${OMPF} 
 endif

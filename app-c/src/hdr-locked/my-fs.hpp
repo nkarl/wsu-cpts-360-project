@@ -108,7 +108,7 @@ namespace FS {
                 print("s_inodes_per_group"  , sp->s_inodes_per_group);
                 print("s_mnt_count"         , sp->s_mnt_count);
                 print("s_max_mnt_count"     , sp->s_max_mnt_count);
-                print("s_magic"             , sp->s_magic, "hex");
+                print("s_magic"             , sp->s_magic                       , "hex");
                 print("s_mtime"             , std::ctime((i64 *)&sp->s_mtime));
                 print("s_wtime"             , std::ctime((i64 *)&sp->s_wtime));
                 print("block size"          , ext2->blksize);
