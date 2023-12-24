@@ -113,41 +113,57 @@ namespace FS {
     namespace Show {
         struct EXT2 {
 
-            static u8 *hex2bitstring(i8 value) {
+            /**
+             * helper function that check and set the bits in a byte.
+             */
+            static u8 *hex2bitstring(u8 value) {
                 u8 *bitstring = (u8 *)malloc(sizeof(u8) * 8);
-                for (i8 i = 0; i < 8; ++i) {
-                    bitstring[i] = ((1 << (i % 8)) & (value)) >> (i % 8);
+                for (u8 i = 0; i < 8; ++i) {
+                    bitstring[i] = (value & static_cast<u8>(1 << (i % 8))) >> (i % 8);
                 }
                 return bitstring;
             }
 
             /**
-             * TODO: magnify the `imap` byte array (23 bytes) and expand it into a bit map (23 * 8 bits).
-             *  - [ ] for each hex value, make an i8 bitstring.
-             *  - [ ] construct the mailman's algorithm from
-             *      - a bit mask
-             *      - a bit setting method
-             *      - a bit clearing method
+             * print a bit string.
+             */
+            static void print_bitstring(u8 *bitstring) {
+                for (u32 j = 0; j < 8; ++j) {
+                    // printf("%s", bitstring); // this won't work because 1 != '1' in ASCII.
+                    printf("%1d ", bitstring[j]);
+                }
+                printf("\n");
+            }
+
+            /**
+             * show the bitmap of all inodes on ext2.
              */
             static void imap(FS::EXT2 const *const ext2) {
                 SUPER *sp         = (SUPER *)(ext2->super_block);
                 u32    num_inodes = sp->s_inodes_count;
 
-                std::string bitmap;
-
                 i8 *imap = ext2->imap;
-                printf("\nimap: as bit-string array\n");
+                printf("\nimap: as 8-bit stringss\n");
                 for (u32 i = 0; i <= num_inodes / 8; ++i) {
-                    printf("\tbytes[%02d] %02x ", i + 1, (u8)imap[i]);
+                    printf("\tbytes[%02d]  %02x  ", i + 1, (u8)imap[i]);
                     u8 *bitstring = hex2bitstring((u8)imap[i]);
-                    for (u32 j = 0; j < 8; ++j) {
-                        printf("%b ", bitstring[j]);
-                    }
-                    printf("\n");
-                    delete(bitstring);
+                    print_bitstring(bitstring);
+                    delete bitstring;
                 }
             }
 
+            /**
+             * show the hexmap of all inodes on ext2.
+             *
+             * NOTE:
+             *  - Memory is allocated in chunks. This is done automatically as an optimization by the computer.
+             *      - https://www.c-faq.com/struct/align.html
+             *  - `Each byte` is represented as `2 hex values`, effectively compressing the amount of data shown from 16 points to 2 points.
+             *      - This encoding scheme is an example of `symbolic abstraction`.
+             *      - We use a symbolic value (hex) to represent a larger amount of information (bits).
+             *          - We have to read less but still extract the same amount of meaning from the heap of information.
+             *          - When we need to, we can decode the hex values and expand them into a `bitmap` of 2 bit strings.
+             */
             static void imap(FS::EXT2 const *const ext2, const i8 *const) {
                 SUPER *sp         = (SUPER *)(ext2->super_block);
                 u32    num_inodes = sp->s_inodes_count;
