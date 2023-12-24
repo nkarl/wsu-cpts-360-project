@@ -10,8 +10,6 @@
 #include <string>
 #include <unistd.h>
 
-#include <assert.h>
-
 #include <ext2fs/ext2_fs.h>
 
 #include "constants.hpp"
@@ -166,11 +164,12 @@ namespace FS {
              * NOTE:
              *  - Memory is allocated in chunks. This is done automatically as an optimization by the computer.
              *      - https://www.c-faq.com/struct/align.html
-             *  - `Each byte` is represented as `2 hex values`, effectively compressing the amount of data shown from 16 points to 2 points.
+             *  - `Each byte` is represented as `2 hex values`, effectively compressing the amount of data from 8 points to 2 points.
+             *      - e.g. `0xff <- 0x11111111`
              *      - This encoding scheme is an example of `symbolic abstraction`.
              *      - We use a symbolic value (hex) to represent a larger amount of information (bits).
              *          - We have to read less but still extract the same amount of meaning from the heap of information.
-             *          - When we need to, we can decode the hex values and expand them into a `bitmap` of 2 bit strings.
+             *          - When we need to, we can decode the hex values and expand them into a `bitmap` or bitstring.
              */
             static void imap(FS::EXT2 const *const ext2, const i8 *const) {
                 SUPER *sp         = (SUPER *)(ext2->super_block);
