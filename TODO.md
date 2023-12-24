@@ -1,17 +1,21 @@
 
 ### High Priority
 
-- [x] Write unit tests for reading the super block.
-- [ ] Write unit tests for reading the group descriptor.
-- [x] Write a test build in the Makefile.
-- [ ] Write failing tests for reading the imap and the bmap.
-- [ ] Write failing tests for hex to binary conversion and vice versa.
-    - [ ] Work on imap.
-        - [ ] decoding hex to binary with the correct bit order.
-        - [ ] building a bit map for inodes.
+- [ ] Write tests for setting a bit in a byte.
+- [ ] Write tests for clearing a bit in a byte.
 
 ### Lower Priority
 
-- [ ] Write a note on design choice for data types (i8, u8, i32, u32,...) for efficient byte array decoding/encoding
-- [ ] Write a note on design choice using both `i8 *` and `std::string`
+- [ ] Implement `FS::Read` and `FS::Show` for the root node.
+- [ ] Implement `FS::Read` and `FS::Show` for `DIR_ENTRY`.
+
+## Done
+
+- [x] Write unit tests for reading the super block.
+- [x] Write a test build in the Makefile.
+- [x] Work on imap.
+    - [x] decoding hex to binary with the correct bit order.
+    - [x] building a bit map for inodes.
+- [x] Write a note on design choice for data types (i8, u8, i32, u32,...) for efficient byte array decoding/encoding
+- [x] Write a note on design choice using both `i8 *` and `std::string`
 
