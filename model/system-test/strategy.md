@@ -39,9 +39,11 @@ By design, `FS::EXT2` is a struct. Functions that interact with it are decoupled
     1. Test Setup
         - mock the vdisk struct
         - we cannot test `open` and `read` because they are non-deterministic.
-    2. Test
-        - evaluate the magic number
-        - evaluate the log block number
-    3. Test Cleanup
-        - automatically done when the struct goes out of scope thanks to the destructor. 
+    2. Test Body
+        - evaluate the magic number.
+        - evaluate the log block number.
+    3. Test Teardown
+        - reference-typed attributes in `FS::EXT2` should be cleared from memory.
+        - done automatically by the destructor.
 
+Future test suites shall follow this form.

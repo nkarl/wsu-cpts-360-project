@@ -12,22 +12,17 @@ struct ext2_block_super {
     u32 s_r_blocks_count         ; /* Reserved blocks count */
     u32 s_free_blocks_count      ; /* Free blocks count */
     u32 s_free_inodes_count      ; /* Free inodes count */
-
     u32 s_first_data_block       ; /* First Data Block */
     u32 s_log_block_size         ; /* Block size */
-
     u32 s_log_cluster_size       ; /* Allocation cluster size */
     u32 s_blocks_per_group       ; /* # Blocks per group */
     u32 s_clusters_per_group     ; /* # Fragments per group */
     u32 s_inodes_per_group       ; /* # Inodes per group */
     u32 s_mtime                  ; /* Mount time */
     u32 s_wtime                  ; /* Write time */
-
     u16 s_mnt_count              ; /* Mount count */
     u16 s_max_mnt_count          ; /* Max mount count */
-
     u16 s_magic                  ; /* Magic number 0xEF53 */
-
     // more non-essential fields
     u16 s_inode_size             ; /* size of inode structure */
 };
