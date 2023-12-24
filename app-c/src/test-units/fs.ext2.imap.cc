@@ -5,14 +5,13 @@
 #include "all-tests.hpp"
 
 #include <cassert>
-#include <iostream>
 
 using std::string;
 
 /**
  * Integration test. create a new disk and read from it.
  */
-bool _test_fs_ext2() {
+bool _test_fs_ext2_imap() {
     /**
      * SET UP
      */
@@ -27,17 +26,18 @@ bool _test_fs_ext2() {
         system(create_test_disk.c_str());
     }();
 
-
     /**
      * TEST BODY
      */
     {
         i8 const *const diskname = "test_disk";
         FS::EXT2        vdisk(diskname);
-        FS::SUPER      *sp = FS::Read::EXT2::super(&vdisk);
 
-        assert(sp->s_magic == constants::MAGIC_NUMBER);
-        assert(sp->s_log_block_size == 0);  // 0 for ext2
+        FS::Read::EXT2::super(&vdisk);
+        FS::Read::EXT2::group_desc(&vdisk);
+        FS::Read::EXT2::imap(&vdisk);
+        // show bitmap of inodes.
+        FS::Show::EXT2::imap(&vdisk);
     }
 
     /**
@@ -59,17 +59,8 @@ bool _test_fs_ext2() {
 /**
  * test executor.
  */
-void test_fs_ext2() {
-    /**
-     * extra information
-     */
-    {
-        printf("sizeof SUPER%10c     :=%ld bytes\n", 0, sizeof(FS::SUPER));
-        printf("sizeof INODE%10c     :=%ld bytes\n", 0, sizeof(FS::INODE));
-        printf("sizeof DIR_ENTRY%10c :=%ld bytes\n", 0, sizeof(FS::DIR_ENTRY));
-        printf("\n");
-    }
-    Test::Header("confirms EXT2 filesystem");
-    bool result = Test::Body(*_test_fs_ext2);
+void test_fs_ext2_imap() {
+    Test::Header("show imap");
+    bool result = Test::Body(*_test_fs_ext2_imap);
     Test::Footer(result);
 }

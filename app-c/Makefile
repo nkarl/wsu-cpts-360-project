@@ -27,7 +27,7 @@ src_test_units  := src/test-units
 build_units     := ${target_test}/units
 build_runner    := ${target_test}
 
-test_units_o    := fs.ext2.o
+test_units_o    := fs.ext2.o fs.ext2.imap.o fs.ext2.imap.bits.o
 
 test_units_o    := ${addprefix ${build_units}/, ${test_units_o}}
 
@@ -44,10 +44,10 @@ MSG_GCC         := -DMESSAGE="Compiled with GCC"
 MSG_CLG         := -DMESSAGE="Compiled with Clang"
 
 
-ifeq (${CXX}, gcc)
+ifeq (${CXX}, g++)
 	OMPF         := -fopenmp
 	LINKER_FLAGS += ${MSG_GCC} ${OMPF}
-else ifeq (${CXX}, clang)
+else ifeq (${CXX}, clang++)
 	#OMPF         :=
 	LINKER_FLAGS += ${MSG_CLG} ${OMPF} 
 endif

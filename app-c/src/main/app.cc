@@ -1,5 +1,5 @@
-#include "../hdr-locked/my-types.hpp"
 #include "../hdr-locked/my-fs.hpp"
+#include "../hdr-locked/my-types.hpp"
 
 i32 main(i32 argc, i8 *argv[]) {
 
@@ -16,10 +16,14 @@ i32 main(i32 argc, i8 *argv[]) {
     }
 
     FS::EXT2 vdisk(diskname);
-    FS::Read::EXT2::block_super(&vdisk);
-    FS::Show::EXT2::block_super(&vdisk);
-    FS::Read::EXT2::block_group_desc(&vdisk);
-    FS::Show::EXT2::block_group_desc(&vdisk);
+    FS::Read::EXT2::super(&vdisk);
+    FS::Show::EXT2::super(&vdisk);
+    FS::Read::EXT2::group_desc(&vdisk);
+    FS::Show::EXT2::group_desc(&vdisk);
+
+    FS::Read::EXT2::imap(&vdisk);
+    FS::Show::EXT2::imap(&vdisk);
+    FS::Show::EXT2::imap(&vdisk, "bitmap");
 
     return 0;
 }
