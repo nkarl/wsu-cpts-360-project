@@ -26,7 +26,6 @@ bool _test_fs_ext2_imap() {
         system(create_test_disk.c_str());
     }();
 
-
     /**
      * TEST BODY
      */
@@ -37,8 +36,38 @@ bool _test_fs_ext2_imap() {
         FS::Read::EXT2::super(&vdisk);
         FS::Read::EXT2::group_desc(&vdisk);
         FS::Read::EXT2::imap(&vdisk);
-
+        // show bitmap of inodes.
         FS::Show::EXT2::imap(&vdisk);
+
+        /**
+         * test setting a bit in a byte.
+         *
+         *                    76543210
+         * value  =  80d -> 0x01010000
+         * bit_index     ->     5
+         * result = 112d -> 0x01110000
+         */
+        u32 value     = 80;
+        u32 bit_index = 5;
+        u32 expect    = 112;
+
+        u32 result = FS::Show::EXT2::set_bit(value, bit_index);
+        assert(result == expect);
+
+        /**
+         * test clearing a bit from a byte.
+         *
+         *                    76543210
+         * value  = 112d -> 0x01110000
+         * bit_index     ->     5
+         * result =  80d -> 0x01010000
+         */
+        value     = 112;
+        bit_index = 5;
+        expect    = 80;
+
+        result = FS::Show::EXT2::clear_bit(value, bit_index);
+        assert(result == expect);
     }
 
     /**
