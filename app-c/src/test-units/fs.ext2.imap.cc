@@ -26,7 +26,6 @@ bool _test_fs_ext2_imap() {
         system(create_test_disk.c_str());
     }();
 
-
     /**
      * TEST BODY
      */
@@ -37,7 +36,7 @@ bool _test_fs_ext2_imap() {
         FS::Read::EXT2::super(&vdisk);
         FS::Read::EXT2::group_desc(&vdisk);
         FS::Read::EXT2::imap(&vdisk);
-
+        // show bitmap of inodes.
         FS::Show::EXT2::imap(&vdisk);
     }
 
