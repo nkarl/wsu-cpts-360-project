@@ -124,12 +124,12 @@ namespace FS {
                 return bitstring;
             }
 
-            static u8 set_bit(u8 byte, u32 position) {
-                return byte || (1 << position);
+            static u8 set_bit(u8 byte, u8 index) {
+                return byte | (u8)(1 << index);
             }
 
-            static u8 clear_bit(u8 byte, u32 position) {
-                return byte & ~(1 << position);
+            static u8 clear_bit(u8 byte, u8 index) {
+                return byte & (u8) ~(1 << index);
             }
 
             /**

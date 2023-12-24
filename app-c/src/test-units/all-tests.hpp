@@ -23,5 +23,6 @@ struct Test {
 
 void test_fs_ext2();
 void test_fs_ext2_imap();
+void test_fs_ext2_imap_bits();
 
 #endif
