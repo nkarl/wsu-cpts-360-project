@@ -114,14 +114,22 @@ namespace FS {
         struct EXT2 {
 
             /**
-             * helper function that check and set the bits in a byte.
+             * build a bitmap from the byte passed in.
              */
-            static u8 *hex2bitstring(u8 value) {
+            static u8 *byte2bitstring(u8 value) {
                 u8 *bitstring = (u8 *)malloc(sizeof(u8) * 8);
                 for (u8 i = 0; i < 8; ++i) {
                     bitstring[i] = (value & static_cast<u8>(1 << (i % 8))) >> (i % 8);
                 }
                 return bitstring;
+            }
+
+            static u8 set_bit(u8 byte, u32 position) {
+                return byte || (1 << position);
+            }
+
+            static u8 clear_bit(u8 byte, u32 position) {
+                return byte & ~(1 << position);
             }
 
             /**
@@ -146,7 +154,7 @@ namespace FS {
                 printf("\nimap: as 8-bit stringss\n");
                 for (u32 i = 0; i <= num_inodes / 8; ++i) {
                     printf("\tbytes[%02d]  %02x  ", i + 1, (u8)imap[i]);
-                    u8 *bitstring = hex2bitstring((u8)imap[i]);
+                    u8 *bitstring = byte2bitstring((u8)imap[i]);
                     print_bitstring(bitstring);
                     delete bitstring;
                 }
