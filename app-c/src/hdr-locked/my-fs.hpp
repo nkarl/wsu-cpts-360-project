@@ -69,20 +69,23 @@ namespace FS {
                 if (!ext2->super_block && ext2->group_desc_block) {
                     return;
                 }
-                GD *gdp            = (GD *)(ext2->group_desc_block);
-                i32 imap_block_num = gdp->bg_inode_bitmap;
+                GD       *gdp       = (GD *)(ext2->group_desc_block);
+                const u32 block_num = gdp->bg_inode_bitmap;
 
-                read_block(ext2->fd, imap_block_num, ext2->imap);
+                read_block(ext2->fd, block_num, ext2->imap);
             }
 
             /**
              * reads disk information from the SUPER block.
              */
             static SUPER *super(FS::EXT2 *ext2) {
-                i32 fd = ext2->fd, blksize = ext2->blksize;
-                i8 *super_block = ext2->super_block;
-                lseek(fd, blksize * 1, SEEK_SET);
-                read(fd, super_block, blksize);
+                const u32 fd          = ext2->fd;
+                const u32 block_num   = 1;
+                i8       *super_block = ext2->super_block;
+
+                // lseek(fd, blksize * block_num, SEEK_SET);
+                // read(fd, super_block, blksize);
+                read_block(fd, block_num, super_block);
                 SUPER *sp = (SUPER *)super_block;
 
                 //  as a super_block block structure, check EXT2 FS magic number:
@@ -99,11 +102,15 @@ namespace FS {
             /**
              * reads group information from the GD block.
              */
-            static void group_desc(FS::EXT2 *ext2) {
-                i32 fd = ext2->fd, blksize = ext2->blksize;
-                GD *group_desc_block = (GD *)ext2->group_desc_block;
-                lseek(fd, blksize * 2, SEEK_SET);
-                read(fd, group_desc_block, blksize);
+            static GD *group_desc(FS::EXT2 *ext2) {
+                const u32 fd               = ext2->fd;  //, blksize = ext2->blksize;
+                const u32 block_num        = 2;
+                i8       *group_desc_block = ext2->group_desc_block;
+                // lseek(fd, blksize * block_num, SEEK_SET);
+                // read(fd, group_desc_block, blksize);
+                read_block(fd, block_num, group_desc_block);
+                GD *gdp = (GD *)group_desc_block;
+                return gdp;
             }
         };
     }  // namespace Read
