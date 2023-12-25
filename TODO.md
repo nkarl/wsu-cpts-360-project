@@ -1,10 +1,10 @@
 
-### High Priority
+## High Priority
 
 1. [ ] Look for the `ext2fs` header equivalent in Rust crates.
 2. [ ] Map out the project hierarchy and start using the cargo toolchain for unit testing right away.
 
-#### 1. Research tech requirements for the Rust project
+### 1. Research tech requirements for the Rust project
 
 - [bindgen](https://crates.io/crates/bindgen): automatically generates Rust FFI bindings to C (and some C++)
 	- [requirements](https://rust-lang.github.io/rust-bindgen/requirements.html)
@@ -14,7 +14,18 @@
 		4. include the bindings in `src/lib.rs`
 		5. write a sanity test ([example](https://rust-lang.github.io/rust-bindgen/tutorial-5.html))
 
-### Lower Priority
+### 2.  Map out the project hierarchy for a cargo crate
+
+- need information on how to couple (or decouple) source code with unit test code.
+	- the cargo toolchain seems to detect `#[cfg(test)]` automatically so there might be much less work for me to do.
+- how does [packaging](https://doc.rust-lang.org/book/ch07-00-managing-growing-projects-with-packages-crates-and-modules.html) work in Rust?
+	- Packages
+	- Crates
+	- Modules
+	- [more advanced features](https://doc.rust-lang.org/book/ch14-00-more-about-cargo.html)
+		- [workspace](https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html)
+
+## Lower Priority
 
 
 ## Done
