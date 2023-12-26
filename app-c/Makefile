@@ -17,7 +17,7 @@ build_lib_o     := utils.o
 
 build_lib_o     := ${addprefix ${build_lib}/, ${build_lib_o}}
 
-app 						:= ${target_main}/app
+app             := ${target_main}/app
 
 # build unit tests and runner
 ##################################################################
