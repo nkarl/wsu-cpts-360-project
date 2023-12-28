@@ -5,6 +5,7 @@
     - NOTE:
         - at the moment the root node is empty without a record.
         - will need to set a record for the root node via `DIR_ENTRY`.
+- [x] Implement the namespace `FS::Write`.
 - [ ] Implement `FS::Read` and `FS::Show` for `DIR_ENTRY`.
     - [ ] Implement `FS::Write` for `DIR_ENTRY`.
 
