@@ -1,3 +1,4 @@
+test
 
 This document lays out the strategy for building up unit tests for the project. Testing should be deeply integrated into the development process. 
 
