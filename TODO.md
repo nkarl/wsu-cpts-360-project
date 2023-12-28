@@ -3,8 +3,10 @@
 
 - [x] Implement `FS::Read` and `FS::Show` for the root node.
     - NOTE:
-        - at the moment the root node is empty without a record.
-        - will need to set a record for the root node via `DIR_ENTRY`.
+        - at the moment there is <u>no</u> root node *on any newly created disk*.
+        - will use KC's vdisk sample from now on for dev and testing.
+        - ~~will need to set a record for the root node via `DIR_ENTRY`.~~
+        
 - [x] Implement the namespace `FS::Write`.
 - [ ] Implement `FS::Read` and `FS::Show` for `DIR_ENTRY`.
     - [ ] Implement `FS::Write` for `DIR_ENTRY`.
