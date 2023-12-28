@@ -1,6 +1,6 @@
 # make clean
 make app
-DISK=test_disk
+DISK=vdisk
 APP=build/main/app
 chmod +x $APP
 ./$APP $DISK

@@ -134,12 +134,12 @@ namespace FS {
     namespace Show {
         struct EXT2 {
             static void inode_table(FS::EXT2 const *const ext2) {
-                GD       *gdp       = (GD *)(ext2->group_desc_block);
-                //const u32 block_num = gdp->bg_inode_table;
-                const u32 block_num = 10;
+                //GD *gdp = (GD *)(ext2->group_desc_block);
+                 //const u32 block_num = gdp->bg_inode_table;
+                //const u32 block_num = 10;
 
-                i8 buf[constants::BASE_BLOCK_SIZE];
-                FS::Read::EXT2::read_block(ext2->fd, 10, buf);
+                //i8 buf[constants::BASE_BLOCK_SIZE];
+                //FS::Read::EXT2::read_block(ext2->fd, 10, buf);
 
                 INODE *ip = (INODE *)ext2->inode_table;
                 ++ip;
@@ -192,7 +192,7 @@ namespace FS {
                     if (i % 4 == 0) {
                         printf("\n");
                     }
-                    printf("\tbytes[%02d]  %02x  ", i + 1, (u8)imap[i]);
+                    printf("\tbytes[%3d]  %02x  ", i + 1, (u8)imap[i]);
                     u8 *bitstring = byte2bitstring((u8)imap[i]);
                     print_bitstring(bitstring);
                     delete bitstring;
