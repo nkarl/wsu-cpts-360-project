@@ -115,9 +115,20 @@ namespace FS {
         };
     }  // namespace Read
 
+    namespace Update {
+        struct EXT2 {
+            static u8 set_bit(u8 byte, u8 index) {
+                return byte | (u8)(1 << index);
+            }
+
+            static u8 clear_bit(u8 byte, u8 index) {
+                return byte ^ (u8)(1 << index);
+            }
+        };
+    }  // namespace Update
+
     namespace Show {
         struct EXT2 {
-
             /**
              * build a bitmap from the byte passed in.
              */
@@ -127,14 +138,6 @@ namespace FS {
                     bitstring[i] = (value & static_cast<u8>(1 << (i % 8))) >> (i % 8);
                 }
                 return bitstring;
-            }
-
-            static u8 set_bit(u8 byte, u8 index) {
-                return byte | (u8)(1 << index);
-            }
-
-            static u8 clear_bit(u8 byte, u8 index) {
-                return byte ^ (u8)(1 << index);
             }
 
             /**

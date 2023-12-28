@@ -31,7 +31,7 @@ bool _test_fs_ext2_imap_bits() {
         u8 bit_index = 5;
         u8 expect    = 112;
 
-        u32 result = FS::Show::EXT2::set_bit(value, bit_index);
+        u32 result = FS::Update::EXT2::set_bit(value, bit_index);
         assert(result == expect);
 
         /**
@@ -46,7 +46,7 @@ bool _test_fs_ext2_imap_bits() {
         bit_index = 5;
         expect    = 80;
 
-        result = FS::Show::EXT2::clear_bit(value, bit_index);
+        result = FS::Update::EXT2::clear_bit(value, bit_index);
         assert(result == expect);
     }
 
