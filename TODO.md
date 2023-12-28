@@ -10,6 +10,7 @@
 - [ ] Plan out the *first set of function* that interfaces with `FS::EXT2`.
     - mkdir
     - creat
+- [ ] review the data type model.
 
 ## Done
 

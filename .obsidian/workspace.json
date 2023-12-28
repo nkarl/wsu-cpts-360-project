@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "model/system-test/strategy.md",
+                "file": "TODO.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "model/system-test/strategy.md",
+                "file": "TODO.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "model/system-test/strategy.md",
+                "file": "TODO.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +125,9 @@
             "state": {
               "type": "all-properties",
               "state": {
-                "sortOrder": "frequency"
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
               }
             }
           },
@@ -135,7 +137,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "model/system-test/strategy.md"
+                "file": "TODO.md"
               }
             }
           },
@@ -167,8 +169,8 @@
   },
   "active": "d0186056d74472f4",
   "lastOpenFiles": [
-    "model/design.md",
     "model/system-test/strategy.md",
+    "model/design.md",
     "model/system-build/using-Makefile.md",
     "app-c/build/bin/app",
     "app-c/build/obj/sub.o",

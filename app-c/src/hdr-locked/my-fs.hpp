@@ -57,7 +57,7 @@ namespace FS {
     namespace Read {
         struct EXT2 {
             /**
-             * read the block in to a buffer
+             * read the block in to an i8 buffer
              */
             static size_t read_block(i32 fd, u32 block_num, i8 *buffer) {
                 lseek(fd, block_num * constants::BASE_BLOCK_SIZE, SEEK_SET);
@@ -257,7 +257,7 @@ namespace FS {
         };
     }  // namespace Show
 
-    namespace Update {
+    namespace Write {
         struct EXT2 {
             static u8 set_bit(u8 byte, u8 index) {
                 return byte | (u8)(1 << index);
@@ -267,6 +267,6 @@ namespace FS {
                 return byte ^ (u8)(1 << index);
             }
         };
-    }  // namespace Update
+    }  // namespace Write
 };     // namespace FS
 #endif
