@@ -51,6 +51,7 @@ namespace FS {
             delete super_block;
             delete group_desc_block;
             delete imap;
+            delete inode_table;
         }
     };
 
@@ -68,9 +69,13 @@ namespace FS {
              * reads information from the inode table.
              */
             static void inode_table(FS::EXT2 *ext2) {
-                GD       *gdp             = (GD *)(ext2->group_desc_block);
-                const u32 inode_table_num = gdp->bg_inode_table;
-                read_block(ext2->fd, inode_table_num, ext2->inode_table);
+                if (!ext2->group_desc_block && ext2->inode_table) {
+                    return;
+                }
+                GD       *gdp       = (GD *)(ext2->group_desc_block);
+                const u32 block_num = gdp->bg_inode_table;
+
+                read_block(ext2->fd, block_num, ext2->inode_table);
             }
 
             /**
@@ -129,6 +134,13 @@ namespace FS {
     namespace Show {
         struct EXT2 {
             static void inode_table(FS::EXT2 const *const ext2) {
+                GD       *gdp       = (GD *)(ext2->group_desc_block);
+                //const u32 block_num = gdp->bg_inode_table;
+                const u32 block_num = 10;
+
+                i8 buf[constants::BASE_BLOCK_SIZE];
+                FS::Read::EXT2::read_block(ext2->fd, 10, buf);
+
                 INODE *ip = (INODE *)ext2->inode_table;
                 ++ip;
                 printf("\nmode = %4x ", ip->i_mode);
@@ -162,9 +174,9 @@ namespace FS {
             static void print_bitstring(u8 *bitstring) {
                 for (u32 j = 0; j < 8; ++j) {
                     // printf("%s", bitstring); // this won't work because 1 != '1' in ASCII.
-                    printf("%1d ", bitstring[j]);
+                    printf("%1d", bitstring[j]);
                 }
-                printf("\n");
+                printf(" ");
             }
 
             /**
@@ -177,6 +189,9 @@ namespace FS {
                 i8 *imap = ext2->imap;
                 printf("\nimap: as 8-bit stringss\n");
                 for (u32 i = 0; i <= num_inodes / 8; ++i) {
+                    if (i % 4 == 0) {
+                        printf("\n");
+                    }
                     printf("\tbytes[%02d]  %02x  ", i + 1, (u8)imap[i]);
                     u8 *bitstring = byte2bitstring((u8)imap[i]);
                     print_bitstring(bitstring);

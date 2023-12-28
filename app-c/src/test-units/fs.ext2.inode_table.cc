@@ -34,7 +34,9 @@ bool _test_fs_ext2_inode_table() {
         FS::EXT2        vdisk(diskname);
 
         FS::Read::EXT2::super(&vdisk);
+        FS::Show::EXT2::super(&vdisk);
         FS::Read::EXT2::group_desc(&vdisk);
+        FS::Show::EXT2::group_desc(&vdisk);
         FS::Read::EXT2::inode_table(&vdisk);
         FS::Show::EXT2::inode_table(&vdisk);
     }
