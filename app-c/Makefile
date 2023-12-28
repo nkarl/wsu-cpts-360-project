@@ -27,7 +27,7 @@ src_test_units  := src/test-units
 build_units     := ${target_test}/units
 build_runner    := ${target_test}
 
-test_units_o    := fs.ext2.o fs.ext2.imap.o fs.ext2.imap.bits.o
+test_units_o    := fs.ext2.o fs.ext2.imap.o fs.ext2.imap.bits.o fs.ext2.inode_table.o
 
 test_units_o    := ${addprefix ${build_units}/, ${test_units_o}}
 

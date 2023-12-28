@@ -32,6 +32,7 @@ namespace FS {
         i8 *super_block      = nullptr;
         i8 *group_desc_block = nullptr;
         i8 *imap             = nullptr;
+        i8 *inode_table      = nullptr;
 
         EXT2(i8 const *const device_name) : device_name(device_name) {
             fd = open(device_name, O_RDONLY);
@@ -43,6 +44,7 @@ namespace FS {
             this->super_block      = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
             this->group_desc_block = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
             this->imap             = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
+            this->inode_table      = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
         }
 
         ~EXT2() {
@@ -62,7 +64,16 @@ namespace FS {
                 return read(fd, buffer, constants::BASE_BLOCK_SIZE);
             }
 
-            /*
+            /**
+             * reads information from the inode table.
+             */
+            static void inode_table(FS::EXT2 *ext2) {
+                GD       *gdp             = (GD *)(ext2->group_desc_block);
+                const u32 inode_table_num = gdp->bg_inode_table;
+                read_block(ext2->fd, inode_table_num, ext2->inode_table);
+            }
+
+            /**
              * reads information from the IMAP block.
              */
             static void imap(FS::EXT2 *ext2) {
@@ -115,20 +126,25 @@ namespace FS {
         };
     }  // namespace Read
 
-    namespace Update {
-        struct EXT2 {
-            static u8 set_bit(u8 byte, u8 index) {
-                return byte | (u8)(1 << index);
-            }
-
-            static u8 clear_bit(u8 byte, u8 index) {
-                return byte ^ (u8)(1 << index);
-            }
-        };
-    }  // namespace Update
-
     namespace Show {
         struct EXT2 {
+            static void inode_table(FS::EXT2 const *const ext2) {
+                INODE *ip = (INODE *)ext2->inode_table;
+                ++ip;
+                printf("\nmode = %4x ", ip->i_mode);
+                printf("\nuid = %d gid = %d", ip->i_uid, ip->i_gid);
+                printf("\nsize = %d", ip->i_size);
+                printf("\nctime = %s", std::ctime((i64 *)&ip->i_ctime));
+                printf("\nlinks = %d\n", ip->i_links_count);
+                for (u32 i = 0; i < 15; i++) {
+                    // print disk block numbers
+                    if (ip->i_block[i])
+                        // print non-zero blocks only
+                        printf("i_block[%d] = %d\n", i, ip->i_block[i]);
+                }
+                printf("\n");
+            }
+
             /**
              * build a bitmap from the byte passed in.
              */
@@ -240,5 +256,17 @@ namespace FS {
             }
         };
     }  // namespace Show
+
+    namespace Update {
+        struct EXT2 {
+            static u8 set_bit(u8 byte, u8 index) {
+                return byte | (u8)(1 << index);
+            }
+
+            static u8 clear_bit(u8 byte, u8 index) {
+                return byte ^ (u8)(1 << index);
+            }
+        };
+    }  // namespace Update
 };     // namespace FS
 #endif
