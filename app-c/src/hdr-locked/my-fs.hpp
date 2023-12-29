@@ -147,8 +147,10 @@ namespace FS {
                  */
                 i8 buf[constants::BASE_BLOCK_SIZE], record_name[256];
 
-                auto iTABLE = 20;
-                FS::Read::EXT2::read_block(ext2->fd, iTABLE, buf);
+                /*
+                 * BUG: is here
+                 */
+                FS::Read::EXT2::read_block(ext2->fd, ext2->first_inode_num, buf);
 
                 i8 *rp = buf;  // record pointer
 
@@ -171,16 +173,20 @@ namespace FS {
             static void inode_table(FS::EXT2 const *const ext2) {
                 INODE *ip = (INODE *)ext2->inode_table;
                 ++ip;
-                printf("\nmode = %4x ", ip->i_mode);
-                printf("\nuid = %d gid = %d", ip->i_uid, ip->i_gid);
-                printf("\nsize = %d", ip->i_size);
+                printf("\nmode  = %x", ip->i_mode);
+                printf("\nuid   = %d", ip->i_uid);
+                printf("\ngid   = %d", ip->i_gid);
+                printf("\nsize  = %d", ip->i_size);
                 printf("\nctime = %s", std::ctime((i64 *)&ip->i_ctime));
-                printf("\nlinks = %d\n", ip->i_links_count);
+                printf("links = %d\n", ip->i_links_count);
                 for (u32 i = 0; i < 15; i++) {
+                    if (i % 3 == 0) {
+                        printf("\n");
+                    }
                     // print disk block numbers
-                    if (ip->i_block[i])
-                        // print non-zero blocks only
-                        printf("i_block[%d] = %d\n", i, ip->i_block[i]);
+                    // if (ip->i_block[i])
+                    // print non-zero blocks only
+                    printf("\ti_block[%2d] = %d \t", i, ip->i_block[i]);
                 }
                 printf("\n");
             }

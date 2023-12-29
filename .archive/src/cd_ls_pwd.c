@@ -133,6 +133,13 @@ int ls_dir(MINODE *pip) {
     dp = (DIR *)sbuf;
     cp = sbuf;
 
+    for (int i = 0; i < 15; i++) {
+        // print disk block numbers
+        /*if (ip->i_block[i])*/
+            // print non-zero blocks only
+        printf("i_block[%d] = %d\n", i, ip->i_block[i]);
+    }
+
     if (strcmp(dp->name, "/") == 0) {
         name[dp->name_len] = 0;
         print_i_mode(ip);
@@ -200,7 +207,7 @@ int rpwd(MINODE *wd) {
     int blk    = (pino - 1) / 8 + inodes_start;
     int offset = (pino - 1) % 8;
     get_block(dev, blk, buf);
-    DIR *dp = (DIR *)buf + offset;
+    DIR *dp                   = (DIR *)buf + offset;
     char name_buf[BLOCK_SIZE] = {0};
     strncpy(name_buf, dp->name, dp->name_len);
     printf("%s", name_buf);

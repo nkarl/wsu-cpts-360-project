@@ -6,6 +6,9 @@
 
 - [ ] Implement `FS::Read` and `FS::Show` for the root node.
     - BUG: `iblock[0]` doesn't show anything.
+    - FIX:
+        - ensure I have the chain of `Read` mapped out in correct order.
+        - review the `GD` and `INODE` structs.
 - [ ] Implement `FS::Read` and `FS::Show` for `DIR_ENTRY`.
 
 ### Lower Priority
