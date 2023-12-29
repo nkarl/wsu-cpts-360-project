@@ -35,6 +35,7 @@ namespace FS {
         i8 *group_desc_block = nullptr;
         i8 *imap             = nullptr;
         i8 *inode_table      = nullptr;
+        i8 *root_node        = nullptr;
         /*
          * TODO: could be useful to implement a stack for dir_entry here.
          */
@@ -50,6 +51,7 @@ namespace FS {
             this->group_desc_block = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
             this->imap             = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
             this->inode_table      = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
+            this->root_node        = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
         }
 
         ~EXT2() {
@@ -57,6 +59,7 @@ namespace FS {
             delete group_desc_block;
             delete imap;
             delete inode_table;
+            delete root_node;
         }
     };
 
@@ -68,6 +71,13 @@ namespace FS {
             static size_t read_block(i32 fd, u32 block_num, i8 *buffer) {
                 lseek(fd, block_num * constants::BASE_BLOCK_SIZE, SEEK_SET);
                 return read(fd, buffer, constants::BASE_BLOCK_SIZE);
+            }
+
+            static void root_node(FS::EXT2 *ext2) {
+                INODE    *inode_table = (INODE *)(ext2->inode_table);
+                const u32 block_num   = inode_table->i_block[0];
+
+                read_block(ext2->fd, block_num, ext2->root_node);
             }
 
             /**
@@ -145,28 +155,21 @@ namespace FS {
                  *  - get data block buffer.
                  *  - jump forward by the record's length of each dir_entry.
                  */
-                i8 buf[constants::BASE_BLOCK_SIZE], record_name[256];
+                i8 record_name[256];
 
-                /*
-                 * BUG: is here
-                 */
-                FS::Read::EXT2::read_block(ext2->fd, ext2->first_inode_num, buf);
 
-                i8 *rp = buf;  // record pointer
+                i8 *rp = ext2->root_node;  // record pointer
 
-                DIR_ENTRY *dep = (DIR_ENTRY *)buf;
+                DIR_ENTRY *dep = (DIR_ENTRY *)ext2->root_node;
 
-                /*
-                 * BUG: currently doesn't show the correct inode number and dir entries.
-                 * TODO: write test for this.
-                 */
-                // while (rp < buf + constants::BASE_BLOCK_SIZE) {
-                std::strncpy(record_name, dep->name, dep->name_len);
-                record_name[dep->name_len] = 0;
-                // std::string record_name = std::string(dep->name, dep->rec_len);
-                printf("inode[%d] %d %d %s\t", dep->inode, dep->rec_len, dep->name_len, record_name);
-                rp += dep->rec_len;
-                dep = (DIR_ENTRY *)rp;
+                // BUG: there is still a problem with the while loop.
+                //while (rp < buf + constants::BASE_BLOCK_SIZE) {
+                    std::strncpy(record_name, dep->name, dep->name_len);
+                    record_name[dep->name_len] = 0;
+                    // std::string record_name = std::string(dep->name, dep->rec_len);
+                    printf("inode[%d] %d %d %s\t", dep->inode, dep->rec_len, dep->name_len, record_name);
+                    rp += dep->rec_len;
+                    dep = (DIR_ENTRY *)rp;
                 //}
             }
 

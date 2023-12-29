@@ -11,7 +11,7 @@ using std::string;
 /**
  * Integration test. create a new disk and read from it.
  */
-bool _test_fs_ext2_inode_table() {
+bool _test_fs_ext2_root_dir_entries() {
     /**
      * SET UP
      */
@@ -36,12 +36,13 @@ bool _test_fs_ext2_inode_table() {
         FS::Read::EXT2::super(&vdisk);
 
         FS::Read::EXT2::group_desc(&vdisk);
-        FS::Show::EXT2::group_desc(&vdisk);
 
         FS::Read::EXT2::imap(&vdisk);
 
         FS::Read::EXT2::inode_table(&vdisk);
         FS::Show::EXT2::inode_table(&vdisk);
+
+        FS::Show::EXT2::dir_entry(&vdisk);
     }
 
     /**
@@ -63,8 +64,8 @@ bool _test_fs_ext2_inode_table() {
 /**
  * test executor.
  */
-void test_fs_ext2_inode_table() {
-    Test::Header("show inode table");
-    bool result = Test::Body(*_test_fs_ext2_inode_table);
+void test_fs_ext2_root_dir_entries() {
+    Test::Header("show root node dir entries");
+    bool result = Test::Body(*_test_fs_ext2_root_dir_entries);
     Test::Footer(result);
 }

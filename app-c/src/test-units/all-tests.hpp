@@ -25,5 +25,6 @@ void test_fs_ext2();
 void test_fs_ext2_imap();
 void test_fs_ext2_imap_bits();
 void test_fs_ext2_inode_table();
+void test_fs_ext2_root_dir_entries();
 
 #endif
