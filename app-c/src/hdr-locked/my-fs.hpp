@@ -66,13 +66,16 @@ namespace FS {
     namespace Read {
         struct EXT2 {
             /**
-             * read the block in to an i8 buffer
+             * read the block in to an i8 buffer.
              */
             static size_t read_block(i32 fd, u32 block_num, i8 *buffer) {
                 lseek(fd, block_num * constants::BASE_BLOCK_SIZE, SEEK_SET);
                 return read(fd, buffer, constants::BASE_BLOCK_SIZE);
             }
 
+            /**
+             * read the entries of the root node.
+             */
             static void root_node(FS::EXT2 *ext2) {
                 INODE *ip = (INODE *)(ext2->inode_table);
                 ++ip;
@@ -144,26 +147,14 @@ namespace FS {
     namespace Show {
         struct EXT2 {
             static void root_node(FS::EXT2 const *const ext2) {
-                /*
-                 * TODO: implement the algorithm to step through the dir entries (`dir_entries`) in an inode's data block.
-                 *  - get data block buffer.
-                 *  - jump forward by the record's length of each dir_entry.
-                 */
-                // i8 record_name[256];
-
-                i8 *rp = ext2->root_node;  // record pointer
-
-                DIR_ENTRY *dep = (DIR_ENTRY *)ext2->root_node;
-
+                i8        *rp = ext2->root_node;  // record pointer
+                DIR_ENTRY *dp = (DIR_ENTRY *)ext2->root_node;
+                printf("%8s %8s %8s %10s\n", "inode#", "rec_len", "name_len", "rec_name");
                 while (rp < ext2->root_node + constants::BASE_BLOCK_SIZE) {
-                    std::string record_name = std::string(dep->name, dep->rec_len);
-                    // printf("inode[%d] %d %d %s\t", dep->inode, dep->rec_len, dep->name_len, record_name.c_str());
-                    printf("\ninode_num    = %d", dep->inode);
-                    printf("\nrec_len      = %d", dep->rec_len);
-                    printf("\nrec_name_len = %d", dep->name_len);
-                    printf("\nrec_name     = %s\n", record_name.c_str());
-                    rp += dep->rec_len;
-                    dep = (DIR_ENTRY *)rp;
+                    std::string record_name = std::string(dp->name, dp->rec_len);
+                    printf("%8d %8d %8d %10s\n", dp->inode, dp->rec_len, dp->name_len, record_name.c_str());
+                    rp += dp->rec_len;
+                    dp = (DIR_ENTRY *)rp;
                 }
             }
 
@@ -181,9 +172,9 @@ namespace FS {
                         printf("\n");
                     }
                     // print disk block numbers
-                    if (ip->i_block[i])
-                        // print non-zero blocks only
-                        printf("\ti_block[%2d] = %d \t", i, ip->i_block[i]);
+                    if (ip->i_block[i]) {
+                        printf("\ti_block[%2d] = %d \t", i, ip->i_block[i]);  // print non-zero blocks only
+                    }
                 }
                 printf("\n");
             }
