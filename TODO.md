@@ -1,18 +1,16 @@
 
 ### High Priority
 
-- [x] Implement `FS::Read` and `FS::Show` for the root node.
-    - NOTE:
-        - at the moment there is <u>no</u> root node *on any newly created disk*.
-        - will use KC's vdisk sample from now on for dev and testing.
-        - ~~will need to set a record for the root node via `DIR_ENTRY`.~~
-        
-- [x] Implement the namespace `FS::Write`.
+- [x] Review KC's book p.230 Mount Partitions.
+    - [x] create and mount an ext2 vdisk.
+
+- [ ] Implement `FS::Read` and `FS::Show` for the root node.
+    - BUG: `iblock[0]` doesn't show anything.
 - [ ] Implement `FS::Read` and `FS::Show` for `DIR_ENTRY`.
-    - [ ] Implement `FS::Write` for `DIR_ENTRY`.
 
 ### Lower Priority
 
+- [ ] Implement `FS::Write` for `DIR_ENTRY`.
 - [ ] Peruse KC's book on the next components of the FS.
 - [ ] Plan out the *first set of function* that interfaces with `FS::EXT2`.
     - mkdir

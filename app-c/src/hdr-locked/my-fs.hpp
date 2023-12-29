@@ -154,6 +154,10 @@ namespace FS {
 
                 DIR_ENTRY *dep = (DIR_ENTRY *)buf;
 
+                /*
+                 * BUG: currently doesn't show the correct inode number and dir entries.
+                 * TODO: write test for this.
+                 */
                 // while (rp < buf + constants::BASE_BLOCK_SIZE) {
                 std::strncpy(record_name, dep->name, dep->name_len);
                 record_name[dep->name_len] = 0;
