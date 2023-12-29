@@ -27,7 +27,6 @@ bool _test_fs_ext2() {
         system(create_vdisk.c_str());
     }();
 
-
     /**
      * TEST BODY
      */
@@ -35,7 +34,7 @@ bool _test_fs_ext2() {
         i8 const *const diskname = "vdisk";
         FS::EXT2        vdisk(diskname);
         FS::SUPER      *sp = FS::Read::EXT2::super(&vdisk);
-
+        FS::Show::EXT2::super(&vdisk);
         assert(sp->s_magic == constants::MAGIC_NUMBER);
         assert(sp->s_log_block_size == 0);  // 0 for ext2
     }

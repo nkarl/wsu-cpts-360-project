@@ -34,15 +34,11 @@ bool _test_fs_ext2_root_dir_entries() {
         FS::EXT2        vdisk(diskname);
 
         FS::Read::EXT2::super(&vdisk);
-
         FS::Read::EXT2::group_desc(&vdisk);
-
         FS::Read::EXT2::imap(&vdisk);
-
         FS::Read::EXT2::inode_table(&vdisk);
-        FS::Show::EXT2::inode_table(&vdisk);
-
-        FS::Show::EXT2::dir_entry(&vdisk);
+        FS::Read::EXT2::root_node(&vdisk);
+        FS::Show::EXT2::root_node(&vdisk);
     }
 
     /**

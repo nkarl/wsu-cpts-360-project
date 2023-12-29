@@ -74,9 +74,10 @@ namespace FS {
             }
 
             static void root_node(FS::EXT2 *ext2) {
-                INODE    *inode_table = (INODE *)(ext2->inode_table);
-                const u32 block_num   = inode_table->i_block[0];
-
+                INODE *ip = (INODE *)(ext2->inode_table);
+                ++ip;
+                const u32 block_num = ip->i_block[0];
+                printf("\nroot_node block_num = %d\n", block_num);
                 read_block(ext2->fd, block_num, ext2->root_node);
             }
 
@@ -84,12 +85,11 @@ namespace FS {
              * reads information from the inode table.
              */
             static void inode_table(FS::EXT2 *ext2) {
-                if (!ext2->group_desc_block && ext2->inode_table) {
+                if (!ext2->group_desc_block && !ext2->inode_table) {
                     return;
                 }
                 GD       *gdp       = (GD *)(ext2->group_desc_block);
                 const u32 block_num = gdp->bg_inode_table;
-
                 read_block(ext2->fd, block_num, ext2->inode_table);
             }
 
@@ -97,13 +97,24 @@ namespace FS {
              * reads information from the IMAP block.
              */
             static void imap(FS::EXT2 *ext2) {
-                if (!ext2->super_block && ext2->group_desc_block) {
+                if (!ext2->super_block && !ext2->group_desc_block) {
                     return;
                 }
                 GD       *gdp       = (GD *)(ext2->group_desc_block);
                 const u32 block_num = gdp->bg_inode_bitmap;
-
                 read_block(ext2->fd, block_num, ext2->imap);
+            }
+
+            /**
+             * reads group information from the GD block.
+             */
+            static GD *group_desc(FS::EXT2 *ext2) {
+                const u32 fd               = ext2->fd;  //, blksize = ext2->blksize;
+                const u32 block_num        = constants::GD_BLOCK;
+                i8       *group_desc_block = ext2->group_desc_block;
+                read_block(fd, block_num, group_desc_block);
+                GD *gdp = (GD *)group_desc_block;
+                return gdp;
             }
 
             /**
@@ -111,11 +122,8 @@ namespace FS {
              */
             static SUPER *super(FS::EXT2 *ext2) {
                 const u32 fd          = ext2->fd;
-                const u32 block_num   = 1;
+                const u32 block_num   = constants::SUPER_BLOCK;
                 i8       *super_block = ext2->super_block;
-
-                // lseek(fd, blksize * block_num, SEEK_SET);
-                // read(fd, super_block, blksize);
                 read_block(fd, block_num, super_block);
                 SUPER *sp = (SUPER *)super_block;
 
@@ -130,51 +138,33 @@ namespace FS {
                 ext2->first_inode_num = sp->s_first_ino;
                 return sp;
             }
-
-            /**
-             * reads group information from the GD block.
-             */
-            static GD *group_desc(FS::EXT2 *ext2) {
-                const u32 fd               = ext2->fd;  //, blksize = ext2->blksize;
-                const u32 block_num        = 2;
-                i8       *group_desc_block = ext2->group_desc_block;
-                // lseek(fd, blksize * block_num, SEEK_SET);
-                // read(fd, group_desc_block, blksize);
-                read_block(fd, block_num, group_desc_block);
-                GD *gdp = (GD *)group_desc_block;
-                return gdp;
-            }
         };
     }  // namespace Read
 
     namespace Show {
         struct EXT2 {
-            static void dir_entry(FS::EXT2 const *const ext2) {
+            static void root_node(FS::EXT2 const *const ext2) {
                 /*
                  * TODO: implement the algorithm to step through the dir entries (`dir_entries`) in an inode's data block.
                  *  - get data block buffer.
                  *  - jump forward by the record's length of each dir_entry.
                  */
-                //i8 record_name[256];
-
+                // i8 record_name[256];
 
                 i8 *rp = ext2->root_node;  // record pointer
 
                 DIR_ENTRY *dep = (DIR_ENTRY *)ext2->root_node;
 
-                /*
-                 * NOTE: the inode number is very large, might even be outside the bound of vdisk.
-                 * TODO: check this value later against the upper bound of the total inodes (disksize = 4MB).
-                 * BUG: there is still a problem with the while loop.
-                */
-                //while (rp < buf + constants::BASE_BLOCK_SIZE) {
-                    //std::strncpy(record_name, dep->name, dep->name_len);
-                    //record_name[dep->name_len] = 0;
-                     std::string record_name = std::string(dep->name, dep->rec_len);
-                    printf("inode[%d] %d %d %s\t", dep->inode, dep->rec_len, dep->name_len, record_name.c_str());
+                while (rp < ext2->root_node + constants::BASE_BLOCK_SIZE) {
+                    std::string record_name = std::string(dep->name, dep->rec_len);
+                    // printf("inode[%d] %d %d %s\t", dep->inode, dep->rec_len, dep->name_len, record_name.c_str());
+                    printf("\ninode_num    = %d", dep->inode);
+                    printf("\nrec_len      = %d", dep->rec_len);
+                    printf("\nrec_name_len = %d", dep->name_len);
+                    printf("\nrec_name     = %s\n", record_name.c_str());
                     rp += dep->rec_len;
                     dep = (DIR_ENTRY *)rp;
-                //}
+                }
             }
 
             static void inode_table(FS::EXT2 const *const ext2) {
@@ -191,9 +181,9 @@ namespace FS {
                         printf("\n");
                     }
                     // print disk block numbers
-                    // if (ip->i_block[i])
-                    // print non-zero blocks only
-                    printf("\ti_block[%2d] = %d \t", i, ip->i_block[i]);
+                    if (ip->i_block[i])
+                        // print non-zero blocks only
+                        printf("\ti_block[%2d] = %d \t", i, ip->i_block[i]);
                 }
                 printf("\n");
             }
@@ -265,6 +255,25 @@ namespace FS {
             }
 
             /**
+             * shows the info of the gd block of the given ext2.
+             */
+            static void group_desc(FS::EXT2 const *const ext2) {
+                GD *gdp = (GD *)(ext2->group_desc_block);
+
+                printf("\nGD BLOCK\n");
+                printf("----------------------------------------------\n");
+                print("bg_block_bitmap", gdp->bg_block_bitmap);
+                print("bg_inode_bitmap", gdp->bg_inode_bitmap);
+                print("bg_inode_table", gdp->bg_inode_table);
+                print("bg_free_blocks_count", gdp->bg_free_blocks_count);
+                print("bg_free_inodes_count", gdp->bg_free_inodes_count);
+                print("bg_used_dirs_count", gdp->bg_used_dirs_count);
+                // print("bg_pad"            , gdp->bg_pad);
+                // print("bg_reserved"       , *gdp->bg_reserved);
+                printf("%c", '\n');
+            }
+
+            /**
              * shows the info of the super_block block of the given ext2.
              */
             static void super(FS::EXT2 const *const ext2) {
@@ -289,25 +298,6 @@ namespace FS {
                 print("block size", ext2->blksize);
                 // print("inode size"          , sp->s_inode_size);
                 print("first inode num", sp->s_first_ino);
-                printf("%c", '\n');
-            }
-
-            /**
-             * shows the info of the gd block of the given ext2.
-             */
-            static void group_desc(FS::EXT2 const *const ext2) {
-                GD *gdp = (GD *)(ext2->group_desc_block);
-
-                printf("\nGD BLOCK\n");
-                printf("----------------------------------------------\n");
-                print("bg_block_bitmap", gdp->bg_block_bitmap);
-                print("bg_inode_bitmap", gdp->bg_inode_bitmap);
-                print("bg_inode_table", gdp->bg_inode_table);
-                print("bg_free_blocks_count", gdp->bg_free_blocks_count);
-                print("bg_free_inodes_count", gdp->bg_free_inodes_count);
-                print("bg_used_dirs_count", gdp->bg_used_dirs_count);
-                // print("bg_pad"            , gdp->bg_pad);
-                // print("bg_reserved"       , *gdp->bg_reserved);
                 printf("%c", '\n');
             }
         };

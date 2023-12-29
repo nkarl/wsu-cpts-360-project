@@ -16,14 +16,14 @@ bool _test_fs_ext2_inode_table() {
      * SET UP
      */
     []() -> void {
-        string create_vdisk{
-            "if [ ! -f vdisk ]; then "
-            "WRITE_LIMIT=1024;"
-            "dd if=/dev/zero of=vdisk bs=$WRITE_LIMIT count=1440;"
-            "mke2fs -c vdisk -b 1440;"
-            "fi"};
+        //string create_vdisk{
+            //"if [ ! -f vdisk ]; then "
+            //"WRITE_LIMIT=1024;"
+            //"dd if=/dev/zero of=vdisk bs=$WRITE_LIMIT count=1440;"
+            //"mke2fs -c vdisk -b 1440;"
+            //"fi"};
 
-        system(create_vdisk.c_str());
+        //system(create_vdisk.c_str());
     }();
 
     /**
@@ -34,10 +34,7 @@ bool _test_fs_ext2_inode_table() {
         FS::EXT2        vdisk(diskname);
 
         FS::Read::EXT2::super(&vdisk);
-
         FS::Read::EXT2::group_desc(&vdisk);
-        FS::Show::EXT2::group_desc(&vdisk);
-
         FS::Read::EXT2::imap(&vdisk);
 
         FS::Read::EXT2::inode_table(&vdisk);
