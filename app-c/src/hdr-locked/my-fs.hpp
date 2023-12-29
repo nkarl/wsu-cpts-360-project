@@ -162,9 +162,11 @@ namespace FS {
 
                 DIR_ENTRY *dep = (DIR_ENTRY *)ext2->root_node;
 
-                // NOTE: the inode number is very large, might even be outside the bound of vdisk.
-                // TODO: check this value later.
-                // BUG: there is still a problem with the while loop.
+                /*
+                 * NOTE: the inode number is very large, might even be outside the bound of vdisk.
+                 * TODO: check this value later against the upper bound of the total inodes (disksize = 4MB).
+                 * BUG: there is still a problem with the while loop.
+                */
                 //while (rp < buf + constants::BASE_BLOCK_SIZE) {
                     //std::strncpy(record_name, dep->name, dep->name_len);
                     //record_name[dep->name_len] = 0;
