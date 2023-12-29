@@ -1,0 +1,2 @@
+sudo losetup /dev/loop20 vdisk;
+sudo mount /dev/loop20 /mnt;

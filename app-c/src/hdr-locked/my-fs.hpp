@@ -3,6 +3,7 @@
 
 #include "my-types.hpp"
 
+#include <cstring>
 #include <ctime>
 #include <fcntl.h>
 #include <stdio.h>
@@ -28,11 +29,15 @@ namespace FS {
         i32         fd      = -1;
         u32         blksize = constants::BASE_BLOCK_SIZE;
         i32         inodesize;
+        i32         first_inode_num;
 
         i8 *super_block      = nullptr;
         i8 *group_desc_block = nullptr;
         i8 *imap             = nullptr;
         i8 *inode_table      = nullptr;
+        /*
+         * TODO: could be useful to implement a stack for dir_entry here.
+         */
 
         EXT2(i8 const *const device_name) : device_name(device_name) {
             fd = open(device_name, O_RDONLY);
@@ -111,7 +116,8 @@ namespace FS {
                 }
                 // printf("EXT2 FS OK\n");
 
-                ext2->blksize = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
+                ext2->blksize         = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
+                ext2->first_inode_num = sp->s_first_ino;
                 return sp;
             }
 
@@ -133,14 +139,32 @@ namespace FS {
 
     namespace Show {
         struct EXT2 {
+            static void dir_entry(FS::EXT2 const *const ext2) {
+                /*
+                 * TODO: implement the algorithm to step through the dir entries (`dir_entries`) in an inode's data block.
+                 *  - get data block buffer.
+                 *  - jump forward by the record's length of each dir_entry.
+                 */
+                i8 buf[constants::BASE_BLOCK_SIZE], record_name[256];
+
+                auto iTABLE = 20;
+                FS::Read::EXT2::read_block(ext2->fd, iTABLE, buf);
+
+                i8 *rp = buf;  // record pointer
+
+                DIR_ENTRY *dep = (DIR_ENTRY *)buf;
+
+                // while (rp < buf + constants::BASE_BLOCK_SIZE) {
+                std::strncpy(record_name, dep->name, dep->name_len);
+                record_name[dep->name_len] = 0;
+                // std::string record_name = std::string(dep->name, dep->rec_len);
+                printf("inode[%d] %d %d %s\t", dep->inode, dep->rec_len, dep->name_len, record_name);
+                rp += dep->rec_len;
+                dep = (DIR_ENTRY *)rp;
+                //}
+            }
+
             static void inode_table(FS::EXT2 const *const ext2) {
-                //GD *gdp = (GD *)(ext2->group_desc_block);
-                 //const u32 block_num = gdp->bg_inode_table;
-                //const u32 block_num = 10;
-
-                //i8 buf[constants::BASE_BLOCK_SIZE];
-                //FS::Read::EXT2::read_block(ext2->fd, 10, buf);
-
                 INODE *ip = (INODE *)ext2->inode_table;
                 ++ip;
                 printf("\nmode = %4x ", ip->i_mode);
