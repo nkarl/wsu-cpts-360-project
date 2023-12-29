@@ -155,19 +155,21 @@ namespace FS {
                  *  - get data block buffer.
                  *  - jump forward by the record's length of each dir_entry.
                  */
-                i8 record_name[256];
+                //i8 record_name[256];
 
 
                 i8 *rp = ext2->root_node;  // record pointer
 
                 DIR_ENTRY *dep = (DIR_ENTRY *)ext2->root_node;
 
+                // NOTE: the inode number is very large, might even be outside the bound of vdisk.
+                // TODO: check this value later.
                 // BUG: there is still a problem with the while loop.
                 //while (rp < buf + constants::BASE_BLOCK_SIZE) {
-                    std::strncpy(record_name, dep->name, dep->name_len);
-                    record_name[dep->name_len] = 0;
-                    // std::string record_name = std::string(dep->name, dep->rec_len);
-                    printf("inode[%d] %d %d %s\t", dep->inode, dep->rec_len, dep->name_len, record_name);
+                    //std::strncpy(record_name, dep->name, dep->name_len);
+                    //record_name[dep->name_len] = 0;
+                     std::string record_name = std::string(dep->name, dep->rec_len);
+                    printf("inode[%d] %d %d %s\t", dep->inode, dep->rec_len, dep->name_len, record_name.c_str());
                     rp += dep->rec_len;
                     dep = (DIR_ENTRY *)rp;
                 //}
