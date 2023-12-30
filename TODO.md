@@ -1,10 +1,11 @@
 
 ## High Priority
 
-- [ ] Review the code Reading and Showing `inode_table` and `root_node`.
-- [ ] Find a way to write more deterministic tests for them.
-    - The tests could try to address the case where `ino` exceeds the total number of inodes on disk.
-    - The tests could try to address the case where `ino` for the `root_node` is 1.
+- [ ] Add support for both EXT2 and EXT4.
+- [x] Review the code Reading and Showing `inode_table` and `root_node`.
+    - [ ] Find a way to write more deterministic tests for them.
+        - The tests could try to address the case where `ino` exceeds the total number of inodes on disk.
+        - The tests could try to address the case where `ino` for the `root_node` is 1.
 
 ## Lower Priority
 
@@ -18,6 +19,8 @@
 
 ## Done
 
+- [x] Fixed a critical error in `automaton/make-vdisk` where every new test disk is created with the incorrect spec (wrong block and inode sizes).
+    - this bug was the reason why nothing is displayed when querying the root inode; it created the wrong byte offset.
 - [x] Implement `FS::Read` and `FS::Show` for `DIR_ENTRY`.
     - [x] Implement test.
     - BUG: The while loop in `FS::Show::EXT2::root_node` doesn't terminate.
