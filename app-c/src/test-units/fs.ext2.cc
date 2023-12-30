@@ -17,25 +17,24 @@ bool _test_fs_ext2() {
      * SET UP
      */
     []() -> void {
-        string create_test_disk{
-            "if [ ! -f test_disk ]; then "
+        string create_vdisk{
+            "if [ ! -f vdisk ]; then "
             "WRITE_LIMIT=1024;"
-            "dd if=/dev/zero of=test_disk bs=$WRITE_LIMIT count=1440;"
-            "mke2fs -c test_disk -b 1440;"
+            "dd if=/dev/zero of=vdisk bs=$WRITE_LIMIT count=1440;"
+            "mke2fs -c vdisk -b 1440;"
             "fi"};
 
-        system(create_test_disk.c_str());
+        system(create_vdisk.c_str());
     }();
-
 
     /**
      * TEST BODY
      */
     {
-        i8 const *const diskname = "test_disk";
+        i8 const *const diskname = "vdisk";
         FS::EXT2        vdisk(diskname);
         FS::SUPER      *sp = FS::Read::EXT2::super(&vdisk);
-
+        FS::Show::EXT2::super(&vdisk);
         assert(sp->s_magic == constants::MAGIC_NUMBER);
         assert(sp->s_log_block_size == 0);  // 0 for ext2
     }
@@ -45,13 +44,13 @@ bool _test_fs_ext2() {
      */
     [=]()
         -> void {
-        // string remove_test_disk{
+        // string remove_vdisk{
         //"echo cleaning up the test...;"
-        //"if [ -f test_disk ]; then "
-        //"rm test_disk;"
+        //"if [ -f vdisk ]; then "
+        //"rm vdisk;"
         //"fi"
         //};
-        // system(remove_test_disk.c_str());
+        // system(remove_vdisk.c_str());
     }();
     return true;
 }

@@ -17,7 +17,7 @@ build_lib_o     := utils.o
 
 build_lib_o     := ${addprefix ${build_lib}/, ${build_lib_o}}
 
-app 						:= ${target_main}/app
+app             := ${target_main}/app
 
 # build unit tests and runner
 ##################################################################
@@ -27,7 +27,8 @@ src_test_units  := src/test-units
 build_units     := ${target_test}/units
 build_runner    := ${target_test}
 
-test_units_o    := fs.ext2.o fs.ext2.imap.o fs.ext2.imap.bits.o
+test_units_o    := fs.ext2.o fs.ext2.imap.o fs.ext2.imap.bits.o fs.ext2.inode_table.o \
+									 fs.ext2.root_dir_entries.o
 
 test_units_o    := ${addprefix ${build_units}/, ${test_units_o}}
 
