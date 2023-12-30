@@ -12,24 +12,23 @@
 #include <unistd.h>
 
 #include <ext2fs/ext2_fs.h>
-
-#include "constants.hpp"
 // #include "ext2fs.hpp"
 
 #include "../hdr/utils.hpp"
+#include "constants.hpp"
 
 namespace FS {
-    using SUPER     = ext2_super_block;
-    using GD        = ext2_group_desc;
-    using INODE     = ext2_inode;
-    using DIR_ENTRY = ext2_dir_entry_2;
-
     struct EXT2 {
+        using SUPER     = ext2_super_block;
+        using GD        = ext2_group_desc;
+        using INODE     = ext2_inode;
+        using DIR_ENTRY = ext2_dir_entry_2;
+
         std::string device_name;
         i32         fd      = -1;
         u32         blksize = constants::BASE_BLOCK_SIZE;
         i32         inodesize;
-        i32         first_inode_num;
+        // i32         first_inode_num;
 
         i8 *super_block      = nullptr;
         i8 *group_desc_block = nullptr;
@@ -77,7 +76,7 @@ namespace FS {
              * read the entries of the root node.
              */
             static void root_node(FS::EXT2 *ext2) {
-                INODE *ip = (INODE *)(ext2->inode_table);
+                FS::EXT2::INODE *ip = (FS::EXT2::INODE *)(ext2->inode_table);
                 ++ip;
                 const u32 block_num = ip->i_block[0];
                 printf("\nroot_node block_num = %d\n", block_num);
@@ -91,8 +90,8 @@ namespace FS {
                 if (!ext2->group_desc_block && !ext2->inode_table) {
                     return;
                 }
-                GD       *gdp       = (GD *)(ext2->group_desc_block);
-                const u32 block_num = gdp->bg_inode_table;
+                FS::EXT2::GD *gdp       = (FS::EXT2::GD *)(ext2->group_desc_block);
+                const u32     block_num = gdp->bg_inode_table;
                 read_block(ext2->fd, block_num, ext2->inode_table);
             }
 
@@ -103,32 +102,32 @@ namespace FS {
                 if (!ext2->super_block && !ext2->group_desc_block) {
                     return;
                 }
-                GD       *gdp       = (GD *)(ext2->group_desc_block);
-                const u32 block_num = gdp->bg_inode_bitmap;
+                FS::EXT2::GD *gdp       = (FS::EXT2::GD *)(ext2->group_desc_block);
+                const u32     block_num = gdp->bg_inode_bitmap;
                 read_block(ext2->fd, block_num, ext2->imap);
             }
 
             /**
              * reads group information from the GD block.
              */
-            static GD *group_desc(FS::EXT2 *ext2) {
+            static FS::EXT2::GD *group_desc(FS::EXT2 *ext2) {
                 const u32 fd               = ext2->fd;  //, blksize = ext2->blksize;
                 const u32 block_num        = constants::GD_BLOCK;
                 i8       *group_desc_block = ext2->group_desc_block;
                 read_block(fd, block_num, group_desc_block);
-                GD *gdp = (GD *)group_desc_block;
+                FS::EXT2::GD *gdp = (FS::EXT2::GD *)group_desc_block;
                 return gdp;
             }
 
             /**
              * reads disk information from the SUPER block.
              */
-            static SUPER *super(FS::EXT2 *ext2) {
+            static FS::EXT2::SUPER *super(FS::EXT2 *ext2) {
                 const u32 fd          = ext2->fd;
                 const u32 block_num   = constants::SUPER_BLOCK;
                 i8       *super_block = ext2->super_block;
                 read_block(fd, block_num, super_block);
-                SUPER *sp = (SUPER *)super_block;
+                FS::EXT2::SUPER *sp = (FS::EXT2::SUPER *)super_block;
 
                 //  as a super_block block structure, check EXT2 FS magic number:
                 if (sp->s_magic != constants::MAGIC_NUMBER) {
@@ -137,8 +136,8 @@ namespace FS {
                 }
                 // printf("EXT2 FS OK\n");
 
-                ext2->blksize         = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
-                ext2->first_inode_num = sp->s_first_ino;
+                ext2->blksize = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
+                // ext2->first_inode_num = sp->s_first_ino;
                 return sp;
             }
         };
@@ -147,10 +146,12 @@ namespace FS {
     namespace Show {
         struct EXT2 {
             static void root_node(FS::EXT2 const *const ext2) {
-                i8        *rp = ext2->root_node;  // record pointer
-                DIR_ENTRY *dp = (DIR_ENTRY *)ext2->root_node;
+                i8                  *rp = ext2->root_node;  // record pointer
+                FS::EXT2::DIR_ENTRY *dp = (FS::EXT2::DIR_ENTRY *)ext2->root_node;
                 printf("%8s %8s %8s %10s\n", "inode#", "rec_len", "name_len", "rec_name");
-                while (rp < ext2->root_node + constants::BASE_BLOCK_SIZE) {
+
+                u32 i = 0;  // sets a counter to print only the first ten records
+                while (i < 10 && rp < ext2->root_node + constants::BASE_BLOCK_SIZE) {
                     /*
                      * BUG: still doesn't fix the problem with zero-length records.
                      * - The loop never breaks if `rp` starts at a smaller value and is always added by 0 `rec_len`.
@@ -168,12 +169,13 @@ namespace FS {
                          */
                         rp += 1;
                     }
-                    dp = (DIR_ENTRY *)rp;
+                    dp = (FS::EXT2::DIR_ENTRY *)rp;
+                    ++i;
                 }
             }
 
             static void inode_table(FS::EXT2 const *const ext2) {
-                INODE *ip = (INODE *)ext2->inode_table;
+                FS::EXT2::INODE *ip = (FS::EXT2::INODE *)ext2->inode_table;
                 ++ip;
                 printf("\nmode  = %x", ip->i_mode);
                 printf("\nuid   = %d", ip->i_uid);
@@ -219,8 +221,8 @@ namespace FS {
              * show the bitmap of all inodes on ext2.
              */
             static void imap(FS::EXT2 const *const ext2) {
-                SUPER *sp         = (SUPER *)(ext2->super_block);
-                u32    num_inodes = sp->s_inodes_count;
+                FS::EXT2::SUPER *sp         = (FS::EXT2::SUPER *)(ext2->super_block);
+                u32              num_inodes = sp->s_inodes_count;
 
                 i8 *imap = ext2->imap;
                 printf("\nimap: as 8-bit stringss\n");
@@ -249,8 +251,8 @@ namespace FS {
              *          - When we need to, we can decode the hex values and expand them into a `bitmap` or bitstring.
              */
             static void imap(FS::EXT2 const *const ext2, const i8 *const) {
-                SUPER *sp         = (SUPER *)(ext2->super_block);
-                u32    num_inodes = sp->s_inodes_count;
+                FS::EXT2::SUPER *sp         = (FS::EXT2::SUPER *)(ext2->super_block);
+                u32              num_inodes = sp->s_inodes_count;
 
                 i8 *imap = ext2->imap;
                 printf("\nimap: as hex array\n");
@@ -263,7 +265,7 @@ namespace FS {
              * shows the info of the gd block of the given ext2.
              */
             static void group_desc(FS::EXT2 const *const ext2) {
-                GD *gdp = (GD *)(ext2->group_desc_block);
+                FS::EXT2::GD *gdp = (FS::EXT2::GD *)(ext2->group_desc_block);
 
                 printf("\nGD BLOCK\n");
                 printf("----------------------------------------------\n");
@@ -282,7 +284,7 @@ namespace FS {
              * shows the info of the super_block block of the given ext2.
              */
             static void super(FS::EXT2 const *const ext2) {
-                SUPER *sp = (SUPER *)(ext2->super_block);
+                FS::EXT2::SUPER *sp = (FS::EXT2::SUPER *)(ext2->super_block);
 
                 printf("\nSUPER BLOCK\n");
                 printf("----------------------------------------------\n");
@@ -302,7 +304,7 @@ namespace FS {
                 print("s_wtime", std::ctime((i64 *)&sp->s_wtime));
                 print("block size", ext2->blksize);
                 // print("inode size"          , sp->s_inode_size);
-                print("first inode num", sp->s_first_ino);
+                // print("first inode num", sp->s_first_ino);
                 printf("%c", '\n');
             }
         };

@@ -31,9 +31,9 @@ bool _test_fs_ext2() {
      * TEST BODY
      */
     {
-        i8 const *const diskname = "vdisk";
-        FS::EXT2        vdisk(diskname);
-        FS::SUPER      *sp = FS::Read::EXT2::super(&vdisk);
+        i8 const *const  diskname = "vdisk";
+        FS::EXT2         vdisk(diskname);
+        FS::EXT2::SUPER *sp = FS::Read::EXT2::super(&vdisk);
         FS::Show::EXT2::super(&vdisk);
         assert(sp->s_magic == constants::MAGIC_NUMBER);
         assert(sp->s_log_block_size == 0);  // 0 for ext2
@@ -63,9 +63,9 @@ void test_fs_ext2() {
      * extra information
      */
     {
-        printf("sizeof SUPER%10c     :=%ld bytes\n", 0, sizeof(FS::SUPER));
-        printf("sizeof INODE%10c     :=%ld bytes\n", 0, sizeof(FS::INODE));
-        printf("sizeof DIR_ENTRY%10c :=%ld bytes\n", 0, sizeof(FS::DIR_ENTRY));
+        // printf("sizeof SUPER%10c     :=%ld bytes\n", 0, sizeof(SUPER));
+        printf("sizeof INODE%10c     :=%ld bytes\n", 0, sizeof(FS::EXT2::INODE));
+        printf("sizeof DIR_ENTRY%10c :=%ld bytes\n", 0, sizeof(FS::EXT2::DIR_ENTRY));
         printf("\n");
     }
     Test::Header("confirms EXT2 filesystem");
