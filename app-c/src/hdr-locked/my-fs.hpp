@@ -151,9 +151,23 @@ namespace FS {
                 DIR_ENTRY *dp = (DIR_ENTRY *)ext2->root_node;
                 printf("%8s %8s %8s %10s\n", "inode#", "rec_len", "name_len", "rec_name");
                 while (rp < ext2->root_node + constants::BASE_BLOCK_SIZE) {
+                    /*
+                     * BUG: still doesn't fix the problem with zero-length records.
+                     * - The loop never breaks if `rp` starts at a smaller value and is always added by 0 `rec_len`.
+                     * - This is a potential security risk.
+                     */
                     std::string record_name = std::string(dp->name, dp->rec_len);
                     printf("%8d %8d %8d %10s\n", dp->inode, dp->rec_len, dp->name_len, record_name.c_str());
                     rp += dp->rec_len;
+                    if (dp->rec_len == 0) {
+                        /*
+                         * FIX: this is a temporary fix.
+                         *  - I am not sure yet how records are organized in memory. Is it sparsed or contiguous?
+                         *  - If it is the latter, then we can simply break when encountering 0 `rec_len`.
+                         *  - This fix covers both cases.
+                         */
+                        rp += 1;
+                    }
                     dp = (DIR_ENTRY *)rp;
                 }
             }
