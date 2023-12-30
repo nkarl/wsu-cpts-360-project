@@ -206,8 +206,17 @@ struct ext2_inode {
 	- This is a way to implement functional interface (typeclass) in C++. We group functions into corresponding sub-namespaces.
 	- This allows for cleaner `struct` definition; a `struct` should only holds attributes.
 2. We allocate persistent memory for the vdisk's SUPER and GD in order to access them quickly.
-	- memory is *cheap*, allocate `BASE_BLOCK_SIZE` to each.
-1. read the table of inodes from the GD pointer.
+	- *heap memory* is *cheap*, allocate `BASE_BLOCK_SIZE` to each.
+    - this shall be the basis for an in-memory structure of the vdisk, similar to the VDOM in React.
+        - the rationale is that we will keep an copy of the vdisk (or part of it) in memory, this allows for fast Read and Show operations since we bypass the need to copy from the actual disk into data buffer.
+        - we only need to write/commit at specific points.
+3. Given the structure of vdisk and basic Read/Show/Write operations have been defined, we can start looking into the more detailed functional interface.
+    1. `ls`
+        - The basic Read/Show/Write already makes up a large part of the function `ls`, which simply lists the dir entry of a particular node.
+        - The `ls` should be the next focus. We will gather and package the Read/Show operations together into a single abstraction.
+    2. `mkdir`
+    3. `creat`
+
 
 ## IV. The Shell
 
