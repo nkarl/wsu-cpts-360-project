@@ -24,16 +24,28 @@ namespace FS {
      * NOTE:
      *  - https://github.com/torvalds/linux/blob/master/fs/ext2/ext2.h
      *  - https://ext4.wiki.kernel.org/index.php/Ext4_Disk_Layout#Blocks
+     *  - https://man7.org/linux/man-pages/man2/lseek.2.html
+     *
      */
     struct EXT2 {
+        /*
+         * TODO: supports EXT4
+         *  - in ext4 the first 1024 bytes are padding. This guarantees that the second 1024 bytes read into 1024B buffer shall
+         *    contain all the information of the disk.
+         *  - the flow should be: disk_check -> read_super with correct block size
+         *
+         */
         using SUPER     = ext2_super_block;
         using GD        = ext2_group_desc;
         using INODE     = ext2_inode;
         using DIR_ENTRY = ext2_dir_entry_2;
 
+        const u32 BLOCK_0_PADDING = 1024;
+
         std::string device_name;
-        i32         fd      = -1;
-        u32         blksize = constants::BASE_BLOCK_SIZE;
+        i32         fd               = -1;
+        u32         first_data_block = 1;
+        u32         BLK_SIZE         = constants::BASE_BLOCK_SIZE;
         u32         first_ino;
 
         i8 *super_block      = nullptr;
@@ -78,6 +90,15 @@ namespace FS {
                 return read(fd, buffer, constants::BASE_BLOCK_SIZE);
             }
 
+            static size_t read_block(FS::EXT2 const *const ext2, u32 block_num, i8 *buff) {
+                u32 block  = block_num * ext2->BLK_SIZE;
+                u32 offset = (block_num == 1)
+                                 ? 0 + block
+                                 : ext2->BLOCK_0_PADDING + block;
+                lseek(ext2->fd, offset, SEEK_SET);
+                return read(ext2->fd, buff, ext2->BLK_SIZE);
+            }
+
             /**
              * read the entries of the root node.
              */
@@ -115,7 +136,7 @@ namespace FS {
              * reads group information from the GD block.
              */
             static FS::EXT2::GD *group_desc(FS::EXT2 *ext2) {
-                const u32 fd               = ext2->fd;  //, blksize = ext2->blksize;
+                const u32 fd               = ext2->fd;  //, BLK_SIZE = ext2->BLK_SIZE;
                 const u32 block_num        = constants::GD_BLOCK;
                 i8       *group_desc_block = ext2->group_desc_block;
                 read_block(fd, block_num, group_desc_block);
@@ -140,9 +161,25 @@ namespace FS {
                 }
                 // printf("EXT2 FS OK\n");
 
-                ext2->blksize   = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
+                ext2->BLK_SIZE  = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
                 ext2->first_ino = sp->s_first_ino;
                 return sp;
+            }
+
+            static void disk_check(FS::EXT2 *ext2) {
+                const u32 BLOCK_0_PADDING = 1024;
+                i8        buf[BLOCK_0_PADDING];
+                read_block(ext2->fd, 1 * BLOCK_0_PADDING, buf);
+
+                FS::EXT2::SUPER *sp = (FS::EXT2::SUPER *)buf;
+
+                if (sp->s_magic != constants::MAGIC_NUMBER) {
+                    printf("NOT an EXT2/3/4 FS.\n");
+                    exit(2);
+                }
+
+                ext2->first_data_block = sp->s_first_data_block;
+                ext2->BLK_SIZE         = sp->s_log_block_size;
             }
         };
     }  // namespace Read
@@ -308,7 +345,7 @@ namespace FS {
                 print("s_magic", sp->s_magic, "hex");
                 print("s_mtime", std::ctime((i64 *)&sp->s_mtime));
                 print("s_wtime", std::ctime((i64 *)&sp->s_wtime));
-                print("block size", ext2->blksize);
+                print("block size", ext2->BLK_SIZE);
                 print("inode size", sp->s_inode_size);
                 print("first ino", sp->s_first_ino);
                 printf("%c", '\n');
