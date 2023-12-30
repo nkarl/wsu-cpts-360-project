@@ -6,7 +6,7 @@
 constexpr u16 EXT2_NAME_LEN = 256;
 
 /* page 303 */
-struct ext2_block_super {
+struct ext2_super_block {
     u32 s_inodes_count           ; /* Inodes count */
     u32 s_blocks_count           ; /* Blocks count */
     u32 s_r_blocks_count         ; /* Reserved blocks count */
@@ -33,7 +33,7 @@ struct ext2_block_super {
 };
 
 /* page 303 */
-struct ext2_block_group_desc {
+struct ext2_group_desc {
     u32 bg_block_bitmap           ; // Bmap block number
     u32 bg_inode_bitmap           ; // Imap block number
     u32 bg_inode_table            ; // points to the block containing first inode
