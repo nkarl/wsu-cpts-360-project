@@ -1,6 +1,6 @@
-#include "../hdr-locked/constants.hpp"
-#include "../hdr-locked/my-fs.hpp"
-#include "../hdr-locked/my-types.hpp"
+#include "../../hdr-locked/constants.hpp"
+#include "../../hdr-locked/my-fs.hpp"
+#include "../../hdr-locked/my-types.hpp"
 
 #include "all-tests.hpp"
 

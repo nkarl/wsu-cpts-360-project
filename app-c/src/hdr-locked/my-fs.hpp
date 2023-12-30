@@ -27,8 +27,7 @@ namespace FS {
         std::string device_name;
         i32         fd      = -1;
         u32         blksize = constants::BASE_BLOCK_SIZE;
-        i32         inodesize;
-        // i32         first_inode_num;
+        u32         first_ino;
 
         i8 *super_block      = nullptr;
         i8 *group_desc_block = nullptr;
@@ -79,7 +78,6 @@ namespace FS {
                 FS::EXT2::INODE *ip = (FS::EXT2::INODE *)(ext2->inode_table);
                 ++ip;
                 const u32 block_num = ip->i_block[0];
-                printf("\nroot_node block_num = %d\n", block_num);
                 read_block(ext2->fd, block_num, ext2->root_node);
             }
 
@@ -90,8 +88,7 @@ namespace FS {
                 if (!ext2->group_desc_block && !ext2->inode_table) {
                     return;
                 }
-                FS::EXT2::GD *gdp       = (FS::EXT2::GD *)(ext2->group_desc_block);
-                const u32     block_num = gdp->bg_inode_table;
+                const u32 block_num = ext2->first_ino - 1;
                 read_block(ext2->fd, block_num, ext2->inode_table);
             }
 
@@ -136,8 +133,8 @@ namespace FS {
                 }
                 // printf("EXT2 FS OK\n");
 
-                ext2->blksize = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
-                // ext2->first_inode_num = sp->s_first_ino;
+                ext2->blksize   = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
+                ext2->first_ino = sp->s_first_ino;
                 return sp;
             }
         };
@@ -148,7 +145,7 @@ namespace FS {
             static void root_node(FS::EXT2 const *const ext2) {
                 i8                  *rp = ext2->root_node;  // record pointer
                 FS::EXT2::DIR_ENTRY *dp = (FS::EXT2::DIR_ENTRY *)ext2->root_node;
-                printf("%8s %8s %8s %10s\n", "inode#", "rec_len", "name_len", "rec_name");
+                printf("\n%8s %8s %8s %10s\n", "inode#", "rec_len", "name_len", "rec_name");
 
                 u32 i = 0;  // sets a counter to print only the first ten records
                 while (i < 7 && rp < ext2->root_node + constants::BASE_BLOCK_SIZE) {
@@ -173,7 +170,7 @@ namespace FS {
                     ++i;
                 }
                 if (i == 7) {
-                    printf("  . . . omitted remaining entries . . ."); 
+                    printf("  . . . omitted remaining entries . . .");
                 }
             }
 
@@ -185,13 +182,13 @@ namespace FS {
                 printf("\ngid   = %d", ip->i_gid);
                 printf("\nsize  = %d", ip->i_size);
                 printf("\nctime = %s", std::ctime((i64 *)&ip->i_ctime));
-                printf("links = %d\n", ip->i_links_count);
+                printf("\nlinks = %d\n", ip->i_links_count);
                 for (u32 i = 0; i < 15; i++) {
-                    if (i % 3 == 0) {
-                        printf("\n");
-                    }
                     // print disk block numbers
                     if (ip->i_block[i]) {
+                        if (i % 3 == 0) {
+                            printf("\n");
+                        }
                         printf("\ti_block[%2d] = %d \t", i, ip->i_block[i]);  // print non-zero blocks only
                     }
                 }
@@ -278,8 +275,8 @@ namespace FS {
                 print("bg_free_blocks_count", gdp->bg_free_blocks_count);
                 print("bg_free_inodes_count", gdp->bg_free_inodes_count);
                 print("bg_used_dirs_count", gdp->bg_used_dirs_count);
-                //print("bg_pad", gdp->bg_pad);
-                //print("bg_reserved", *gdp->bg_reserved);
+                // print("bg_pad", gdp->bg_pad);
+                // print("bg_reserved", *gdp->bg_reserved);
                 printf("%c", '\n');
             }
 
@@ -307,7 +304,7 @@ namespace FS {
                 print("s_wtime", std::ctime((i64 *)&sp->s_wtime));
                 print("block size", ext2->blksize);
                 print("inode size", sp->s_inode_size);
-                print("first inode num", sp->s_first_ino);
+                print("first ino", sp->s_first_ino);
                 printf("%c", '\n');
             }
         };

@@ -16,8 +16,8 @@ struct Test {
     }
 
     static void Footer(bool result) {
-        printf("\n%s", std::string(100, '-').c_str());
-        printf("[%c]", result ? 'x' : ' ');
+        printf("\n%s", std::string(100, '.').c_str());
+        printf("[%c]\n", result ? 'x' : ' ');
     }
 };
 
