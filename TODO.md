@@ -8,6 +8,7 @@
 
 ## Lower Priority
 
+- [ ] Implement an EXT4 version of EXT2 struct.
 - [ ] Implement `FS::Write` for `DIR_ENTRY`.
 - [ ] Peruse KC's book on the next components of the FS.
 - [ ] Plan out the *first set of function* that interfaces with `FS::EXT2`.

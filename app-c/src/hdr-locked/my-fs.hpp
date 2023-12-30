@@ -201,7 +201,7 @@ namespace FS {
             static u8 *byte2bitstring(u8 value) {
                 u8 *bitstring = (u8 *)malloc(sizeof(u8) * 8);
                 for (u8 i = 0; i < 8; ++i) {
-                    bitstring[i] = (value & static_cast<u8>(1 << (i % 8))) >> (i % 8);
+                    bitstring[i] = (value & static_cast<u8>(1 << i)) >> i;
                 }
                 return bitstring;
             }
@@ -210,9 +210,9 @@ namespace FS {
              * print a bit string.
              */
             static void print_bitstring(u8 *bitstring) {
-                for (u32 j = 0; j < 8; ++j) {
+                for (u8 i = 0; i < 8; ++i) {
                     // printf("%s", bitstring); // this won't work because 1 != '1' in ASCII.
-                    printf("%1d", bitstring[j]);
+                    printf("%1d", bitstring[i]);
                 }
                 printf(" ");
             }
@@ -275,8 +275,8 @@ namespace FS {
                 print("bg_free_blocks_count", gdp->bg_free_blocks_count);
                 print("bg_free_inodes_count", gdp->bg_free_inodes_count);
                 print("bg_used_dirs_count", gdp->bg_used_dirs_count);
-                // print("bg_pad"            , gdp->bg_pad);
-                // print("bg_reserved"       , *gdp->bg_reserved);
+                //print("bg_pad", gdp->bg_pad);
+                //print("bg_reserved", *gdp->bg_reserved);
                 printf("%c", '\n');
             }
 
@@ -303,8 +303,8 @@ namespace FS {
                 print("s_mtime", std::ctime((i64 *)&sp->s_mtime));
                 print("s_wtime", std::ctime((i64 *)&sp->s_wtime));
                 print("block size", ext2->blksize);
-                // print("inode size"          , sp->s_inode_size);
-                // print("first inode num", sp->s_first_ino);
+                print("inode size", sp->s_inode_size);
+                print("first inode num", sp->s_first_ino);
                 printf("%c", '\n');
             }
         };
