@@ -151,7 +151,7 @@ namespace FS {
                 printf("%8s %8s %8s %10s\n", "inode#", "rec_len", "name_len", "rec_name");
 
                 u32 i = 0;  // sets a counter to print only the first ten records
-                while (i < 10 && rp < ext2->root_node + constants::BASE_BLOCK_SIZE) {
+                while (i < 7 && rp < ext2->root_node + constants::BASE_BLOCK_SIZE) {
                     /*
                      * BUG: still doesn't fix the problem with zero-length records.
                      * - The loop never breaks if `rp` starts at a smaller value and is always added by 0 `rec_len`.
@@ -171,6 +171,9 @@ namespace FS {
                     }
                     dp = (FS::EXT2::DIR_ENTRY *)rp;
                     ++i;
+                }
+                if (i == 7) {
+                    printf("  . . . omitted remaining entries . . ."); 
                 }
             }
 
