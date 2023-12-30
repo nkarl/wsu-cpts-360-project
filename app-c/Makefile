@@ -23,7 +23,7 @@ app             := ${target_main}/app
 ##################################################################
 target_test     := build/test
 
-src_test_units  := src/test-units
+src_test_units  := src/test/units
 build_units     := ${target_test}/units
 build_runner    := ${target_test}
 

@@ -1,7 +1,6 @@
 
 ## High Priority
 
-- [ ] Add support for both EXT2 and EXT4.
 - [x] Review the code Reading and Showing `inode_table` and `root_node`.
     - [ ] Find a way to write more deterministic tests for them.
         - The tests could try to address the case where `ino` exceeds the total number of inodes on disk.
@@ -9,7 +8,7 @@
 
 ## Lower Priority
 
-- [ ] Implement an EXT4 version of EXT2 struct.
+- [ ] Add support for both EXT2 and EXT4.
 - [ ] Implement `FS::Write` for `DIR_ENTRY`.
 - [ ] Peruse KC's book on the next components of the FS.
 - [ ] Plan out the *first set of function* that interfaces with `FS::EXT2`.

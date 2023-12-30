@@ -1,6 +1,6 @@
 #include "../hdr-locked/my-types.hpp"
 
-#include "../test-units/all-tests.hpp"
+#include "units/all-tests.hpp"
 
 #include <stdio.h>
 
