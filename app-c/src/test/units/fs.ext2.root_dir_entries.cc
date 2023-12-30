@@ -15,17 +15,6 @@ bool _test_fs_ext2_root_dir_entries() {
     /**
      * SET UP
      */
-    []() -> void {
-        //string create_vdisk{
-            //"if [ ! -f vdisk ]; then "
-            //"WRITE_LIMIT=1024;"
-            //"INODE_SIZE=128;"
-            //"dd if=/dev/zero of=vdisk bs=$WRITE_LIMIT count=1440;"
-            //"mke2fs -c vdisk -I $INODE_SIZE -b $WRITE_LIMIT;"
-            //"fi"};
-
-        //system(create_vdisk.c_str());
-    }();
 
     /**
      * TEST BODY
@@ -45,16 +34,6 @@ bool _test_fs_ext2_root_dir_entries() {
     /**
      * TEAR DOWN
      */
-    [=]()
-        -> void {
-        // string remove_vdisk{
-        //"echo cleaning up the test...;"
-        //"if [ -f vdisk ]; then "
-        //"rm vdisk;"
-        //"fi"
-        //};
-        // system(remove_vdisk.c_str());
-    }();
     return true;
 }
 
