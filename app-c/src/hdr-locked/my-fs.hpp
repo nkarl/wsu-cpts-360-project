@@ -18,6 +18,11 @@
 #include "constants.hpp"
 
 namespace FS {
+    /**
+     * This is an in-memory interface for EXT2 filesystem.
+     *
+     * reference: https://github.com/torvalds/linux/blob/master/fs/ext2/ext2.h
+     */
     struct EXT2 {
         using SUPER     = ext2_super_block;
         using GD        = ext2_group_desc;
@@ -152,7 +157,6 @@ namespace FS {
                     /*
                      * BUG: still doesn't fix the problem with zero-length records.
                      * - The loop never breaks if `rp` starts at a smaller value and is always added by 0 `rec_len`.
-                     * - This is a potential security risk.
                      */
                     std::string record_name = std::string(dp->name, dp->rec_len);
                     printf("%8d %8d %8d %10s\n", dp->inode, dp->rec_len, dp->name_len, record_name.c_str());
