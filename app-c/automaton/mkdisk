@@ -1,0 +1,18 @@
+#!/usr/bin/env nu
+
+def main [--ext (-x): int] {
+  let fs = { ext2: 0 ext4: 2}
+
+  mut BLOCK_SIZE = 1024 
+  mut INODE_SIZE = 128
+
+  if $ext == 4 {
+    $BLOCK_SIZE = 4096
+    $INODE_SIZE = 256 
+  }
+  let BLOCK_COUNT = 1440
+
+  let diskname = "vdisk"
+  bash -c $"dd if=/dev/zero of=($diskname) bs=($BLOCK_SIZE) count=($BLOCK_COUNT)"
+  bash -c $"mke2fs -c ($diskname) -I ($INODE_SIZE) -b ($BLOCK_SIZE)"
+}
