@@ -21,7 +21,9 @@ namespace FS {
     /**
      * This is an in-memory interface for EXT2 filesystem.
      *
-     * reference: https://github.com/torvalds/linux/blob/master/fs/ext2/ext2.h
+     * NOTE:
+     *  - https://github.com/torvalds/linux/blob/master/fs/ext2/ext2.h
+     *  - https://ext4.wiki.kernel.org/index.php/Ext4_Disk_Layout#Blocks
      */
     struct EXT2 {
         using SUPER     = ext2_super_block;
