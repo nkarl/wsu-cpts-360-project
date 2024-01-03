@@ -11,8 +11,12 @@
             "id": "e8878690dd710d7b",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {}
+              "type": "markdown",
+              "state": {
+                "file": "model/design/layout.md",
+                "mode": "source",
+                "source": false
+              }
             }
           }
         ]
@@ -65,8 +69,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "dd8c4d0a71594dd6",
@@ -82,6 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "model/design/layout.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -98,6 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "model/design/layout.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -131,7 +136,9 @@
             "type": "leaf",
             "state": {
               "type": "outline",
-              "state": {}
+              "state": {
+                "file": "model/design/layout.md"
+              }
             }
           },
           {
@@ -162,10 +169,12 @@
   },
   "active": "e8878690dd710d7b",
   "lastOpenFiles": [
+    "model/design/details.md",
+    "model/design/layout.md",
+    "model/design",
     "TODO.md",
     "model/system-test/strategy.md",
     "TODO_DONE.md",
-    "model/design.md",
     "model/system-build/using-Makefile.md",
     "app-c/build/bin/app",
     "app-c/build/obj/sub.o",
