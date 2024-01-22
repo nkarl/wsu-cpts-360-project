@@ -4,16 +4,16 @@
     "type": "split",
     "children": [
       {
-        "id": "ea0ccd7984a2ce50",
+        "id": "b7f7fafbe55aeb7c",
         "type": "tabs",
         "children": [
           {
-            "id": "d0186056d74472f4",
+            "id": "e8878690dd710d7b",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "model/system-test/strategy.md",
+                "file": "model/design/layout.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "model/system-test/strategy.md",
+                "file": "model/design/layout.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "model/system-test/strategy.md",
+                "file": "model/design/layout.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -137,7 +137,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "model/system-test/strategy.md"
+                "file": "model/design/layout.md"
               }
             }
           },
@@ -167,10 +167,14 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "d0186056d74472f4",
+  "active": "e8878690dd710d7b",
   "lastOpenFiles": [
-    "model/design.md",
+    "model/design/details.md",
+    "model/design/layout.md",
+    "model/design",
+    "TODO.md",
     "model/system-test/strategy.md",
+    "TODO_DONE.md",
     "model/system-build/using-Makefile.md",
     "app-c/build/bin/app",
     "app-c/build/obj/sub.o",

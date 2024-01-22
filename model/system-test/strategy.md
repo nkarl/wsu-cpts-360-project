@@ -1,4 +1,15 @@
-test
+## Important Notes
+
+### On the Vdisk Sample
+
+I adapted the source code in some unit tests to send bash scripts to the shell. I did this to accomplish 2 goals:
+	- to see whether that communication between the program and the shell environment is possible
+	- to automate creating new ext2 filesystems for deterministic test results.
+
+However, at the current stage of development (early stage 1, building functionality) the empty ext2 has a problem: there are no records on every new vdisk. This is why I am going to appropriate the sample of vdisk from KC's. This sample has some existing inode records (both dir and file). This simplifies testing.
+
+## General Strategy
+
 This document lays out the strategy for building up unit tests for the project. Testing should be deeply integrated into the development process. 
 
 In general, a particular product needs to be tested on three aspects: functionality, integrity and viability. These three aspects map to unit tests, integration tests and E2E tests, in that order. For this shell program, unit tests will be a very common recurrence. Eventually, once we have gotten to the software packaging phase, we will consider how to conduct integration test.

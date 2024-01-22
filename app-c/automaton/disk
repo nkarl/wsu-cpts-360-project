@@ -1,0 +1,21 @@
+#!/usr/bin/env nu
+
+$env.temp_diskname = "vdisk";
+def "main mount" [--name (-n): string] {
+  if ($name | str length) > 0 {
+    sudo losetup /dev/loop20 $"($name)";
+    sudo mount /dev/loop20 /mnt;
+    echo $"($name) is mounted!"
+    $env.temp_diskname = name;
+  } else {
+    echo "no disk name!";
+  }
+}
+
+def "main umount" [] {
+  sudo umount /mnt;
+  sudo losetup -d /dev/loop20;
+  echo $"($env.temp_diskname) is umounted!"; 
+}
+
+def main [] {}
