@@ -16,7 +16,7 @@ bool _test_fs_ext2_imap_bits() {
      * SET UP
      */
     const u8 value_1 = 80, value_2 = 112;
-    u8       bit_index = 5;
+    const u8 bit_index = 5;
 
     /**
      * TEST BODY

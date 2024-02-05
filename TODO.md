@@ -1,7 +1,7 @@
 
 ## High Priority
 
-- [x] Review the code Reading and Showing `inode_table` and `root_node`.
+- [x] Review the code for Reading and Showing `inode_table` and `root_node`.
 - [ ] Plan out the *first set of function* that interfaces with `FS::EXT2`.
     - mkdir
     - creat
