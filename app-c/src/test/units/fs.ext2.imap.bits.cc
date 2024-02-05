@@ -15,6 +15,8 @@ bool _test_fs_ext2_imap_bits() {
     /**
      * SET UP
      */
+    const u8 value_1 = 80, value_2 = 112;
+    u8       bit_index = 5;
 
     /**
      * TEST BODY
@@ -28,12 +30,7 @@ bool _test_fs_ext2_imap_bits() {
          * bit_index     ->     5
          * result = 112d -> 0x01110000
          */
-        u8 value     = 80;
-        u8 bit_index = 5;
-        u8 expect    = 112;
-
-        u32 result = FS::Write::EXT2::set_bit(value, bit_index);
-        assert(result == expect);
+        auto bit_set_result = FS::Utils::set_bit(value_1, bit_index) == value_2;
 
         /**
          * test clearing a bit from a byte.
@@ -43,12 +40,8 @@ bool _test_fs_ext2_imap_bits() {
          * bit_index     ->     5
          * result =  80d -> 0x01010000
          */
-        value     = 112;
-        bit_index = 5;
-        expect    = 80;
-
-        result = FS::Write::EXT2::clear_bit(value, bit_index);
-        assert(result == expect);
+        auto bit_clear_result = FS::Utils::clear_bit(value_2, bit_index) == value_1;
+        assert(bit_set_result && bit_clear_result);
     }
 
     /**

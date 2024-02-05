@@ -2,37 +2,35 @@
 ## MAKEFILE                                                    ##
 ##################################################################
 ## project directories
-hdr             := src/hdr
-src             := src
+##################################################################
+hdr               := src/hdr
+src               := src
 
 # build main app
 ##################################################################
-target_main     := build/main
+target_main       := build/main
 
-src_lib         := src/lib
-build_lib     	:= ${target_main}/lib
-build_main      := ${target_main}
+src_lib           := src/lib
+build_lib         := ${target_main}/lib
+build_main        := ${target_main}
 
-build_lib_o     := utils.o
+build_lib_o       := utils.o
+build_lib_o       := ${addprefix ${build_lib}/, ${build_lib_o}}
 
-build_lib_o     := ${addprefix ${build_lib}/, ${build_lib_o}}
-
-app             := ${target_main}/app
+app               := ${target_main}/app
 
 # build unit tests and runner
 ##################################################################
-target_test     := build/test
+target_test       := build/test
 
-src_test_units  := src/test/units
-build_units     := ${target_test}/units
-build_runner    := ${target_test}
+src_test_units    := src/test/units
+build_test_units  := ${target_test}/units
+build_test_runner := ${target_test}
 
-test_units_o    := fs.ext2.o fs.ext2.imap.o fs.ext2.imap.bits.o fs.ext2.inode_table.o \
-									 fs.ext2.root_dir_entries.o
+test_units_o      := fs.ext2.o fs.ext2.imap.o fs.ext2.imap.bits.o fs.ext2.inode_table.o fs.ext2.root_dir_entries.o
+test_units_o      := ${addprefix ${build_test_units}/, ${test_units_o}}
 
-test_units_o    := ${addprefix ${build_units}/, ${test_units_o}}
-
-test_runner     := ${target_test}/runner
+test_runner       := ${target_test}/runner
 
 ## compiler flags
 ##################################################################
@@ -66,7 +64,7 @@ ${app}: ${build_lib_o} build/main/app.o
 	${CXX} ${LINKER_FLAGS} $^ -o $@
 
 # 2. compile the main code. 
-${build_main}/%.o: src/main/%.cc | setup build_lib
+${build_main}/%.o: src/main/%.cc | build_lib
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
 .PHONY: test
@@ -78,14 +76,14 @@ ${test_runner}: ${build_lib_o} ${test_units_o} build/test/runner.o
 	${CXX} ${LINKER_FLAGS} $^ -o $@
 
 # 2. compile the runner code. 
-${build_runner}/%.o: src/test/%.cc | setup
+${build_test_runner}/%.o: src/test/%.cc | setup
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
 # 2. compile the unit test code.
-${build_units}/%.o: ${src_test_units}/%.cc | setup build_lib
+${build_test_units}/%.o: ${src_test_units}/%.cc | library
 	${CXX} ${COMPILER_FLAGS} -c $^ -o $@
 
-.PHONY: build_lib
+.PHONY: library
 ##################################################################
 build_lib:
 # 1. compile the lib code.
@@ -96,7 +94,7 @@ ${build_lib}/%.o: ${src_lib}/%.cc | setup # the `|` and the followed argument(s)
 ##################################################################
 setup:
 # 0. set up the build directories
-	$(info $(shell mkdir -p ${build_lib} ${build_units}))
+	$(info $(shell mkdir -p ${build_lib} ${build_test_units}))
 
 ##################################################################
 ## CLEAN TASK                                                  ##

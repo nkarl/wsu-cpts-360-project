@@ -316,16 +316,14 @@ namespace FS {
         };
     }  // namespace Show
 
-    namespace Write {
-        struct EXT2 {
-            static u8 set_bit(u8 byte, u8 index) {
-                return byte | (u8)(1 << index);
-            }
+    struct Utils {
+        static u8 set_bit(u8 byte, u8 index) {
+            return byte | (u8)(1 << index);
+        }
 
-            static u8 clear_bit(u8 byte, u8 index) {
-                return byte ^ (u8)(1 << index);
-            }
-        };
-    }  // namespace Write
-};     // namespace FS
+        static u8 clear_bit(u8 byte, u8 index) {
+            return byte ^ (u8)(1 << index);
+        }
+    };
+};  // namespace FS
 #endif
