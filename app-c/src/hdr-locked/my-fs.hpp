@@ -250,8 +250,9 @@ namespace FS {
              * show the hexmap of all inodes on ext2.
              *
              * NOTE:
-             *  - Memory is allocated in chunks. This is done automatically as an optimization by the computer.
+             *  - Memory is allocated in chunks with alignment. This is done automatically as an optimization by the compiler.
              *      - https://www.c-faq.com/struct/align.html
+             *      - keep `alignment` in mind when writing a memory allocator.
              *  - `Each byte` is represented as `2 hex values`, effectively compressing the amount of data from 8 points to 2 points.
              *      - e.g. `0xff <- 0x11111111`
              *      - This encoding scheme is an example of `symbolic abstraction`.
