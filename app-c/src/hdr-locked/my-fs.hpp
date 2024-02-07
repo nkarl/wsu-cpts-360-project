@@ -42,7 +42,7 @@ namespace FS {
         i8 *inode_table      = nullptr;
         i8 *root_node        = nullptr;
         /*
-         * TODO: could be useful to implement a stack for dir_entry here.
+         * TODO: could be useful to implement a stack for dir_entry in the wrapper data structure (always live while the program running) that holds the state of EXT2.
          */
 
         EXT2(i8 const *const device_name) : device_name(device_name) {
@@ -167,8 +167,11 @@ namespace FS {
                         /*
                          * FIX: this is a temporary fix.
                          *  - I am not sure yet how records are organized in memory. Is it sparsed or contiguous?
-                         *  - If it is the latter, then we can simply break when encountering 0 `rec_len`.
-                         *  - This fix covers both cases.
+                         *      - If it is the latter, then we can simply break when encountering 0 `rec_len`.
+                         *      - This fix covers both cases.
+                         *  - What happens after a record is deleted?
+                         *     - What happens to the memory space that previously occupied by it?
+                         *     - Is it now available for write? How does that work if there is a new rec with larger length we want to write into disk?
                          */
                         rp += 1;
                     }
