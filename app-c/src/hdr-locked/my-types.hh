@@ -1,5 +1,5 @@
-#ifndef MY_TYPES_HPP
-#define MY_TYPES_HPP
+#ifndef MY_TYPES_HH
+#define MY_TYPES_HH
 
 typedef char            i8 ;
 typedef short           i16; 

@@ -1,5 +1,5 @@
-#ifndef ALL_TESTS_HPP
-#define ALL_TESTS_HPP
+#ifndef ALL_TESTS_HH
+#define ALL_TESTS_HH
 
 #include <stdio.h>
 #include <string>

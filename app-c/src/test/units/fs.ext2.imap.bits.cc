@@ -1,8 +1,8 @@
-#include "../../hdr-locked/constants.hpp"
-#include "../../hdr-locked/my-fs.hpp"
-#include "../../hdr-locked/my-types.hpp"
+#include "../../hdr-locked/constants.hh"
+#include "../../hdr-locked/my-fs.hh"
+#include "../../hdr-locked/my-types.hh"
 
-#include "all-tests.hpp"
+#include "all-tests.hh"
 
 #include <cassert>
 

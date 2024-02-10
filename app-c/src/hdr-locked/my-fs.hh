@@ -1,7 +1,7 @@
-#ifndef MY_FS_HPP
-#define MY_FS_HPP
+#ifndef MY_FS_HH
+#define MY_FS_HH
 
-#include "my-types.hpp"
+#include "my-types.hh"
 
 #include <cstring>
 #include <ctime>
@@ -12,10 +12,10 @@
 #include <unistd.h>
 
 #include <ext2fs/ext2_fs.h>
-// #include "ext2fs.hpp"
+// #include "ext2fs.hh"
 
-#include "../hdr/utils.hpp"
-#include "constants.hpp"
+#include "../hdr/utils.hh"
+#include "constants.hh"
 
 namespace FS {
     /**

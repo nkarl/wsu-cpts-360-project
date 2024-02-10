@@ -1,7 +1,7 @@
-#ifndef UTILS_HPP
-#define UTILS_HPP
+#ifndef UTILS_HH
+#define UTILS_HH
 
-#include "../hdr-locked/my-types.hpp"
+#include "../hdr-locked/my-types.hh"
 #include <stdio.h>
 
 void print(i8 const *const, u32);

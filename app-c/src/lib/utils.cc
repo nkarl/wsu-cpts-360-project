@@ -1,4 +1,4 @@
-#include "../hdr/utils.hpp"
+#include "../hdr/utils.hh"
 
 void print(i8 const *const s, u32 x) {
     printf("%-30s = %8d\n", s, x);

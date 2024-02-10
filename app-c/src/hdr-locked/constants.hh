@@ -1,7 +1,7 @@
-#ifndef CONSTANTS_HPP
-#define CONSTANTS_HPP
+#ifndef CONSTANTS_HH
+#define CONSTANTS_HH
 
-#include "my-types.hpp"
+#include "my-types.hh"
 
 namespace constants {
     constexpr u32 BASE_BLOCK_SIZE = 1024;

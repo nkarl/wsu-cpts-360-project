@@ -1,7 +1,7 @@
-#ifndef EXT2_FS_HPP
-#define EXT2_FS_HPP
+#ifndef EXT2_FS_HH
+#define EXT2_FS_HH
 
-#include "my-types.hpp"
+#include "my-types.hh"
 
 constexpr u16 EXT2_NAME_LEN = 256;
 

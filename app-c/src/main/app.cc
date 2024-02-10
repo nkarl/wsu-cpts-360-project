@@ -1,5 +1,5 @@
-#include "../hdr-locked/my-fs.hpp"
-#include "../hdr-locked/my-types.hpp"
+#include "../hdr-locked/my-fs.hh"
+#include "../hdr-locked/my-types.hh"
 
 i32 main(i32 argc, i8 *argv[]) {
 
