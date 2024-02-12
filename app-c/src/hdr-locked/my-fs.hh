@@ -139,11 +139,23 @@ namespace FS {
              * TODO: need a search function for a particular node within a data block.
              *  - all dir entries are small (> 1024 bytes or blocksize). So maximum 12 searches.
              */
-            static inline auto search_entry(FS::EXT2 const *const ext2, vector<string> const &path) {
+            static inline auto search_entry(FS::EXT2 const *const ext2, vector<string> &path) {
 
                 // path vector should include the root node: { "/", "a", "b", "c", "d" }
                 // from root, check all entries for the next match;
-                for (auto token : path) {
+                auto rp   = ext2->root_node;
+                auto root = ext2->root_node;
+                auto iter = (path[0] == "/") ? path.begin() + 1 : path.begin();
+                for (auto token = iter; token != path.end(); ++token) {
+                    // support for relative path search later.
+                    for (auto i = 0; i < 12; ++i) {
+                        auto d = ((INODE *)root)->i_block[i];
+                        // read d into new block
+                        DIR_ENTRY *dp = (DIR_ENTRY *)root;
+                        while (rp < (root + constants::BASE_BLOCK_SIZE)) {
+                            rp += dp->rec_len;
+                        }
+                    }
                 }
             }
 
