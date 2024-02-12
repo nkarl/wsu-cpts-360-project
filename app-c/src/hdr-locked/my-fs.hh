@@ -53,7 +53,7 @@ namespace FS {
             this->group_desc_block = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
             this->imap             = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
             this->inode_table      = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
-            this->root_node        = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
+            // this->root_node        = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
         }
 
         ~EXT2() {
@@ -73,12 +73,17 @@ namespace FS {
                 return read(fd, buffer, constants::BASE_BLOCK_SIZE);
             }
 
+            // get a node given a block number.
+            static inline auto get_node(FS::EXT2 *ext2, u32 block_num) -> i8 * {
+                auto buff = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
+                read_block(ext2->fd, block_num, buff);
+                return buff;
+            }
+
             // read the entries of the root node.
             static inline auto root_node(FS::EXT2 *ext2) -> void {
-                INODE *ip = (INODE *)(ext2->inode_table);
-                ++ip;
-                const u32 block_num = ip->i_block[0];
-                read_block(ext2->fd, block_num, ext2->root_node);
+                const u32 block_num = constants::FIRST_DATA_BLOCK_NUM;
+                ext2->root_node     = get_node(ext2, block_num);
             }
 
             // reads information from the inode table.
@@ -86,7 +91,7 @@ namespace FS {
                 if (!ext2->group_desc_block && !ext2->inode_table) {
                     return;
                 }
-                const u32 block_num = ext2->first_ino - 1;
+                const u32 block_num = constants::INODE_TABLE_BLOCK_NUM;
                 read_block(ext2->fd, block_num, ext2->inode_table);
             }
 
@@ -134,14 +139,12 @@ namespace FS {
     namespace Show {
         namespace EXT2 {
             /*
+             * TODO: need a search function for a particular node within a data block.
+             */
+
+            /*
              * BUG: still doesn't fix the problem with zero-length records.
              *  - The loop never breaks if `rp` starts at a smaller value and is always added by 0 `rec_len`.
-             * FIX: this is a temporary fix.
-             *  - I am not sure yet how records are organized in memory. Is it sparsed or contiguous?
-             *      - If it is the latter, then we can simply break when encountering 0 `rec_len`. This fix covers both cases.
-             *  - What happens after a record is deleted?
-             *     - What happens to the memory space that previously occupied by it?
-             *     - Is it now available for write? How does that work if there is a new rec with larger length we want to write into disk?
              */
             static inline auto root_node(FS::EXT2 const *const ext2) -> void {
                 i8        *rp = ext2->root_node;  // record pointer
@@ -153,6 +156,14 @@ namespace FS {
                     std::string record_name = std::string(dp->name, dp->rec_len);
                     printf("%8d %8d %8d %10s\n", dp->inode, dp->rec_len, dp->name_len, record_name.c_str());
                     rp += dp->rec_len;
+                    /*
+                     * FIX: this is a temporary fix.
+                     *  - I am not sure yet how records are organized in memory. Is it sparsed or contiguous?
+                     *      - If it is the latter, then we can simply break when encountering 0 `rec_len`. This fix covers both cases.
+                     *  - What happens after a record is deleted?
+                     *     - What happens to the memory space that previously occupied by it?
+                     *     - Is it now available for write? How does that work if there is a new rec with larger length we want to write into disk?
+                     */
                     if (dp->rec_len == 0) {
                         rp += 1;
                     }

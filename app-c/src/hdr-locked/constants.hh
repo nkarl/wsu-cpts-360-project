@@ -9,6 +9,8 @@ namespace constants {
     constexpr u32 SUPER_BLOCK     = 1;
     constexpr u32 GD_BLOCK        = 2;
     constexpr u32 ROOT_INODE      = 2;
+    constexpr u32 INODE_TABLE_BLOCK_NUM = 10;
+    constexpr u32 FIRST_DATA_BLOCK_NUM = 33;
 
     constexpr u32 DIR_MODE  = 0x41ed;
     constexpr u32 FILE_MODE = 0x81ae;
