@@ -3,11 +3,11 @@
 
 #include "my-types.hh"
 
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 #include <unistd.h>
 
@@ -41,9 +41,7 @@ namespace FS {
         i8 *imap             = nullptr;
         i8 *inode_table      = nullptr;
         i8 *root_node        = nullptr;
-        /*
-         * TODO: could be useful to implement a stack for dir_entry in the wrapper data structure (always live while the program running) that holds the state of EXT2.
-         */
+        // TODO: could be useful to implement a stack for dir_entry in the wrapper data structure (always live while the program running) that holds the state of EXT2.
 
         EXT2(i8 const *const device_name) : device_name(device_name) {
             fd = open(device_name, O_RDONLY);
@@ -51,7 +49,6 @@ namespace FS {
                 printf("open %sfailed\n", device_name);
                 exit(1);
             }
-
             this->super_block      = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
             this->group_desc_block = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
             this->imap             = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
@@ -70,17 +67,13 @@ namespace FS {
 
     namespace Read {
         namespace EXT2 {
-            /**
-             * read the block in to an i8 buffer.
-             */
+            // read the block in to an i8 buffer.
             static inline auto read_block(i32 fd, u32 block_num, i8 *buffer) -> size_t {
                 lseek(fd, block_num * constants::BASE_BLOCK_SIZE, SEEK_SET);
                 return read(fd, buffer, constants::BASE_BLOCK_SIZE);
             }
 
-            /**
-             * read the entries of the root node.
-             */
+            // read the entries of the root node.
             static inline auto root_node(FS::EXT2 *ext2) -> void {
                 INODE *ip = (INODE *)(ext2->inode_table);
                 ++ip;
@@ -88,9 +81,7 @@ namespace FS {
                 read_block(ext2->fd, block_num, ext2->root_node);
             }
 
-            /**
-             * reads information from the inode table.
-             */
+            // reads information from the inode table.
             static inline auto inode_table(FS::EXT2 *ext2) -> void {
                 if (!ext2->group_desc_block && !ext2->inode_table) {
                     return;
@@ -99,9 +90,7 @@ namespace FS {
                 read_block(ext2->fd, block_num, ext2->inode_table);
             }
 
-            /**
-             * reads information from the IMAP block.
-             */
+            // reads information from the IMAP block.
             static inline auto imap(FS::EXT2 *ext2) -> void {
                 if (!ext2->super_block && !ext2->group_desc_block) {
                     return;
@@ -111,9 +100,7 @@ namespace FS {
                 read_block(ext2->fd, block_num, ext2->imap);
             }
 
-            /**
-             * reads group information from the GD block.
-             */
+            // reads group information from the GD block.
             static inline auto group_desc(FS::EXT2 *ext2) -> GD * {
                 const u32 fd               = ext2->fd;  //, blksize = ext2->blksize;
                 const u32 block_num        = constants::GD_BLOCK;
@@ -123,22 +110,19 @@ namespace FS {
                 return gdp;
             }
 
-            /**
-             * reads disk information from the SUPER block.
-             */
+            // reads disk information from the SUPER block.
             static inline auto super(FS::EXT2 *ext2) -> SUPER * {
-                const u32 fd          = ext2->fd;
-                const u32 block_num   = constants::SUPER_BLOCK;
-                i8       *super_block = ext2->super_block;
-                read_block(fd, block_num, super_block);
-                SUPER *sp = (SUPER *)super_block;
+                const u32 fd        = ext2->fd;
+                const u32 block_num = constants::SUPER_BLOCK;
 
-                //  as a super_block block structure, check EXT2 FS magic number:
+                i8 *super_block = ext2->super_block;
+                read_block(fd, block_num, super_block);
+
+                SUPER *sp = (SUPER *)super_block;
                 if (sp->s_magic != constants::MAGIC_NUMBER) {
                     printf("NOT an EXT2 FS\n");
                     exit(2);
                 }
-                // printf("EXT2 FS OK\n");
 
                 ext2->blksize   = constants::BASE_BLOCK_SIZE * (1 << sp->s_log_block_size);
                 ext2->first_ino = sp->s_first_ino;
@@ -149,30 +133,27 @@ namespace FS {
 
     namespace Show {
         namespace EXT2 {
+            /*
+             * BUG: still doesn't fix the problem with zero-length records.
+             *  - The loop never breaks if `rp` starts at a smaller value and is always added by 0 `rec_len`.
+             * FIX: this is a temporary fix.
+             *  - I am not sure yet how records are organized in memory. Is it sparsed or contiguous?
+             *      - If it is the latter, then we can simply break when encountering 0 `rec_len`. This fix covers both cases.
+             *  - What happens after a record is deleted?
+             *     - What happens to the memory space that previously occupied by it?
+             *     - Is it now available for write? How does that work if there is a new rec with larger length we want to write into disk?
+             */
             static inline auto root_node(FS::EXT2 const *const ext2) -> void {
                 i8        *rp = ext2->root_node;  // record pointer
                 DIR_ENTRY *dp = (DIR_ENTRY *)ext2->root_node;
                 printf("\n%8s %8s %8s %10s\n", "inode#", "rec_len", "name_len", "rec_name");
 
                 u32 i = 0;  // sets a counter to print only the first ten records
-                while (i < 7 && rp < ext2->root_node + constants::BASE_BLOCK_SIZE) {
-                    /*
-                     * BUG: still doesn't fix the problem with zero-length records.
-                     * - The loop never breaks if `rp` starts at a smaller value and is always added by 0 `rec_len`.
-                     */
+                while (i < 7 && rp < (ext2->root_node + constants::BASE_BLOCK_SIZE)) {
                     std::string record_name = std::string(dp->name, dp->rec_len);
                     printf("%8d %8d %8d %10s\n", dp->inode, dp->rec_len, dp->name_len, record_name.c_str());
                     rp += dp->rec_len;
                     if (dp->rec_len == 0) {
-                        /*
-                         * FIX: this is a temporary fix.
-                         *  - I am not sure yet how records are organized in memory. Is it sparsed or contiguous?
-                         *      - If it is the latter, then we can simply break when encountering 0 `rec_len`.
-                         *      - This fix covers both cases.
-                         *  - What happens after a record is deleted?
-                         *     - What happens to the memory space that previously occupied by it?
-                         *     - Is it now available for write? How does that work if there is a new rec with larger length we want to write into disk?
-                         */
                         rp += 1;
                     }
                     dp = (DIR_ENTRY *)rp;
@@ -204,9 +185,7 @@ namespace FS {
                 printf("\n");
             }
 
-            /**
-             * build a bitmap from the byte passed in.
-             */
+            // build a bitmap from the byte passed in.
             static inline auto byte2bitstring(u8 value) -> u8 * {
                 u8 *bitstring = (u8 *)malloc(sizeof(u8) * 8);
                 for (u8 i = 0; i < 8; ++i) {
@@ -215,9 +194,7 @@ namespace FS {
                 return bitstring;
             }
 
-            /**
-             * print a bit string.
-             */
+            // print a bit string.
             static inline auto print_bitstring(u8 *bitstring) -> void {
                 for (u8 i = 0; i < 8; ++i) {
                     // printf("%s", bitstring); // this won't work because 1 != '1' in ASCII.
@@ -226,9 +203,7 @@ namespace FS {
                 printf(" ");
             }
 
-            /**
-             * show the bitmap of all inodes on ext2.
-             */
+            // show the bitmap of all inodes on ext2.
             static inline auto imap(FS::EXT2 const *const ext2) -> void {
                 SUPER *sp         = (SUPER *)(ext2->super_block);
                 u32    num_inodes = sp->s_inodes_count;
@@ -271,9 +246,7 @@ namespace FS {
                 }
             }
 
-            /**
-             * shows the info of the gd block of the given ext2.
-             */
+            // shows the info of the gd block of the given ext2.
             static inline auto group_desc(FS::EXT2 const *const ext2) -> void {
                 GD *gdp = (GD *)(ext2->group_desc_block);
 
@@ -290,9 +263,7 @@ namespace FS {
                 printf("%c", '\n');
             }
 
-            /**
-             * shows the info of the super_block block of the given ext2.
-             */
+            // shows the info of the super_block block of the given ext2.
             static inline auto super(FS::EXT2 const *const ext2) -> void {
                 SUPER *sp = (SUPER *)(ext2->super_block);
 

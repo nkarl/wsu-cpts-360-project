@@ -1,10 +1,12 @@
 #!/usr/bin/env nu
 
+let loop_id = 99;
+
 $env.temp_diskname = "vdisk";
 def "main mount" [--name (-n): string] {
   if ($name | str length) > 0 {
-    sudo losetup /dev/loop20 $"($name)";
-    sudo mount /dev/loop20 /mnt;
+    sudo losetup $"/dev/loop($loop_id)" $"($name)";
+    sudo mount $"/dev/loop($loop_id)" /mnt;
     echo $"($name) is mounted!"
     $env.temp_diskname = name;
   } else {
@@ -14,7 +16,7 @@ def "main mount" [--name (-n): string] {
 
 def "main umount" [] {
   sudo umount /mnt;
-  sudo losetup -d /dev/loop20;
+  sudo losetup -d $"/dev/loop($loop_id)";
   echo $"($env.temp_diskname) is umounted!"; 
 }
 
