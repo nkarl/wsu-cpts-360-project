@@ -17,6 +17,11 @@
 #include "../hdr/utils.hh"
 #include "constants.hh"
 
+using SUPER     = ext2_super_block;
+using GD        = ext2_group_desc;
+using INODE     = ext2_inode;
+using DIR_ENTRY = ext2_dir_entry_2;
+
 namespace FS {
     /**
      * This is an in-memory interface for EXT2 filesystem.
@@ -26,11 +31,6 @@ namespace FS {
      *  - https://ext4.wiki.kernel.org/index.php/Ext4_Disk_Layout#Blocks
      */
     struct EXT2 {
-        using SUPER     = ext2_super_block;
-        using GD        = ext2_group_desc;
-        using INODE     = ext2_inode;
-        using DIR_ENTRY = ext2_dir_entry_2;
-
         std::string device_name;
         i32         fd      = -1;
         u32         blksize = constants::BASE_BLOCK_SIZE;
@@ -73,7 +73,7 @@ namespace FS {
             /**
              * read the block in to an i8 buffer.
              */
-            static inline size_t read_block(i32 fd, u32 block_num, i8 *buffer) {
+            static inline auto read_block(i32 fd, u32 block_num, i8 *buffer) -> size_t {
                 lseek(fd, block_num * constants::BASE_BLOCK_SIZE, SEEK_SET);
                 return read(fd, buffer, constants::BASE_BLOCK_SIZE);
             }
@@ -81,8 +81,8 @@ namespace FS {
             /**
              * read the entries of the root node.
              */
-            static inline void root_node(FS::EXT2 *ext2) {
-                FS::EXT2::INODE *ip = (FS::EXT2::INODE *)(ext2->inode_table);
+            static inline auto root_node(FS::EXT2 *ext2) -> void {
+                INODE *ip = (INODE *)(ext2->inode_table);
                 ++ip;
                 const u32 block_num = ip->i_block[0];
                 read_block(ext2->fd, block_num, ext2->root_node);
@@ -91,7 +91,7 @@ namespace FS {
             /**
              * reads information from the inode table.
              */
-            static inline void inode_table(FS::EXT2 *ext2) {
+            static inline auto inode_table(FS::EXT2 *ext2) -> void {
                 if (!ext2->group_desc_block && !ext2->inode_table) {
                     return;
                 }
@@ -102,36 +102,36 @@ namespace FS {
             /**
              * reads information from the IMAP block.
              */
-            static inline void imap(FS::EXT2 *ext2) {
+            static inline auto imap(FS::EXT2 *ext2) -> void {
                 if (!ext2->super_block && !ext2->group_desc_block) {
                     return;
                 }
-                FS::EXT2::GD *gdp       = (FS::EXT2::GD *)(ext2->group_desc_block);
-                const u32     block_num = gdp->bg_inode_bitmap;
+                GD       *gdp       = (GD *)(ext2->group_desc_block);
+                const u32 block_num = gdp->bg_inode_bitmap;
                 read_block(ext2->fd, block_num, ext2->imap);
             }
 
             /**
              * reads group information from the GD block.
              */
-            static inline FS::EXT2::GD *group_desc(FS::EXT2 *ext2) {
+            static inline auto group_desc(FS::EXT2 *ext2) -> GD * {
                 const u32 fd               = ext2->fd;  //, blksize = ext2->blksize;
                 const u32 block_num        = constants::GD_BLOCK;
                 i8       *group_desc_block = ext2->group_desc_block;
                 read_block(fd, block_num, group_desc_block);
-                FS::EXT2::GD *gdp = (FS::EXT2::GD *)group_desc_block;
+                GD *gdp = (GD *)group_desc_block;
                 return gdp;
             }
 
             /**
              * reads disk information from the SUPER block.
              */
-            static inline FS::EXT2::SUPER *super(FS::EXT2 *ext2) {
+            static inline auto super(FS::EXT2 *ext2) -> SUPER * {
                 const u32 fd          = ext2->fd;
                 const u32 block_num   = constants::SUPER_BLOCK;
                 i8       *super_block = ext2->super_block;
                 read_block(fd, block_num, super_block);
-                FS::EXT2::SUPER *sp = (FS::EXT2::SUPER *)super_block;
+                SUPER *sp = (SUPER *)super_block;
 
                 //  as a super_block block structure, check EXT2 FS magic number:
                 if (sp->s_magic != constants::MAGIC_NUMBER) {
@@ -144,14 +144,14 @@ namespace FS {
                 ext2->first_ino = sp->s_first_ino;
                 return sp;
             }
-        };
-    }  // namespace Read
+        };  // namespace EXT2
+    }       // namespace Read
 
     namespace Show {
         namespace EXT2 {
-            static inline void root_node(FS::EXT2 const *const ext2) {
-                i8                  *rp = ext2->root_node;  // record pointer
-                FS::EXT2::DIR_ENTRY *dp = (FS::EXT2::DIR_ENTRY *)ext2->root_node;
+            static inline auto root_node(FS::EXT2 const *const ext2) -> void {
+                i8        *rp = ext2->root_node;  // record pointer
+                DIR_ENTRY *dp = (DIR_ENTRY *)ext2->root_node;
                 printf("\n%8s %8s %8s %10s\n", "inode#", "rec_len", "name_len", "rec_name");
 
                 u32 i = 0;  // sets a counter to print only the first ten records
@@ -175,7 +175,7 @@ namespace FS {
                          */
                         rp += 1;
                     }
-                    dp = (FS::EXT2::DIR_ENTRY *)rp;
+                    dp = (DIR_ENTRY *)rp;
                     ++i;
                 }
                 if (i == 7) {
@@ -183,8 +183,8 @@ namespace FS {
                 }
             }
 
-            static inline void inode_table(FS::EXT2 const *const ext2) {
-                FS::EXT2::INODE *ip = (FS::EXT2::INODE *)ext2->inode_table;
+            static inline auto inode_table(FS::EXT2 const *const ext2) -> void {
+                INODE *ip = (INODE *)ext2->inode_table;
                 ++ip;
                 printf("\nmode  = %x", ip->i_mode);
                 printf("\nuid   = %d", ip->i_uid);
@@ -207,7 +207,7 @@ namespace FS {
             /**
              * build a bitmap from the byte passed in.
              */
-            static inline u8 *byte2bitstring(u8 value) {
+            static inline auto byte2bitstring(u8 value) -> u8 * {
                 u8 *bitstring = (u8 *)malloc(sizeof(u8) * 8);
                 for (u8 i = 0; i < 8; ++i) {
                     bitstring[i] = (value & static_cast<u8>(1 << i)) >> i;
@@ -218,7 +218,7 @@ namespace FS {
             /**
              * print a bit string.
              */
-            static inline void print_bitstring(u8 *bitstring) {
+            static inline auto print_bitstring(u8 *bitstring) -> void {
                 for (u8 i = 0; i < 8; ++i) {
                     // printf("%s", bitstring); // this won't work because 1 != '1' in ASCII.
                     printf("%1d", bitstring[i]);
@@ -229,9 +229,9 @@ namespace FS {
             /**
              * show the bitmap of all inodes on ext2.
              */
-            static inline void imap(FS::EXT2 const *const ext2) {
-                FS::EXT2::SUPER *sp         = (FS::EXT2::SUPER *)(ext2->super_block);
-                u32              num_inodes = sp->s_inodes_count;
+            static inline auto imap(FS::EXT2 const *const ext2) -> void {
+                SUPER *sp         = (SUPER *)(ext2->super_block);
+                u32    num_inodes = sp->s_inodes_count;
 
                 i8 *imap = ext2->imap;
                 printf("\nimap: as 8-bit stringss\n");
@@ -260,9 +260,9 @@ namespace FS {
              *          - We have to read less but still extract the same amount of meaning from the heap of information.
              *          - When we need to, we can decode the hex values and expand them into a `bitmap` or bitstring.
              */
-            static inline void imap(FS::EXT2 const *const ext2, const i8 *const) {
-                FS::EXT2::SUPER *sp         = (FS::EXT2::SUPER *)(ext2->super_block);
-                u32              num_inodes = sp->s_inodes_count;
+            static inline auto imap(FS::EXT2 const *const ext2, const i8 *const) -> void {
+                SUPER *sp         = (SUPER *)(ext2->super_block);
+                u32    num_inodes = sp->s_inodes_count;
 
                 i8 *imap = ext2->imap;
                 printf("\nimap: as hex array\n");
@@ -274,8 +274,8 @@ namespace FS {
             /**
              * shows the info of the gd block of the given ext2.
              */
-            static inline void group_desc(FS::EXT2 const *const ext2) {
-                FS::EXT2::GD *gdp = (FS::EXT2::GD *)(ext2->group_desc_block);
+            static inline auto group_desc(FS::EXT2 const *const ext2) -> void {
+                GD *gdp = (GD *)(ext2->group_desc_block);
 
                 printf("\nGD BLOCK\n");
                 printf("----------------------------------------------\n");
@@ -293,8 +293,8 @@ namespace FS {
             /**
              * shows the info of the super_block block of the given ext2.
              */
-            static inline void super(FS::EXT2 const *const ext2) {
-                FS::EXT2::SUPER *sp = (FS::EXT2::SUPER *)(ext2->super_block);
+            static inline auto super(FS::EXT2 const *const ext2) -> void {
+                SUPER *sp = (SUPER *)(ext2->super_block);
 
                 printf("\nSUPER BLOCK\n");
                 printf("----------------------------------------------\n");
@@ -317,15 +317,15 @@ namespace FS {
                 print("first ino", sp->s_first_ino);
                 printf("%c", '\n');
             }
-        };
-    }  // namespace Show
+        };  // namespace EXT2
+    }       // namespace Show
 
     namespace Utils {
-        static inline u8 set_bit(u8 byte, u8 index) {
+        static inline auto set_bit(u8 byte, u8 index) -> u8 {
             return byte | (u8)(1 << index);
         }
 
-        static inline u8 clear_bit(u8 byte, u8 index) {
+        static inline auto clear_bit(u8 byte, u8 index) -> u8 {
             return byte ^ (u8)(1 << index);
         }
     };  // namespace Utils
