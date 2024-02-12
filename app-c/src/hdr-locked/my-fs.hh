@@ -8,14 +8,18 @@
 #include <cstring>
 #include <ctime>
 #include <fcntl.h>
+#include <sstream>
 #include <string>
 #include <unistd.h>
+#include <vector>
 
 #include <ext2fs/ext2_fs.h>
 // #include "ext2fs.hh"
 
 #include "../hdr/utils.hh"
 #include "constants.hh"
+
+using namespace std;
 
 using SUPER     = ext2_super_block;
 using GD        = ext2_group_desc;
@@ -53,7 +57,7 @@ namespace FS {
             this->group_desc_block = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
             this->imap             = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
             this->inode_table      = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
-            // this->root_node        = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
+            this->root_node        = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
         }
 
         ~EXT2() {
@@ -73,17 +77,10 @@ namespace FS {
                 return read(fd, buffer, constants::BASE_BLOCK_SIZE);
             }
 
-            // get a node given a block number.
-            static inline auto get_node(FS::EXT2 *ext2, u32 block_num) -> i8 * {
-                auto buff = (i8 *)malloc(sizeof(i8) * constants::BASE_BLOCK_SIZE);
-                read_block(ext2->fd, block_num, buff);
-                return buff;
-            }
-
             // read the entries of the root node.
             static inline auto root_node(FS::EXT2 *ext2) -> void {
                 const u32 block_num = constants::FIRST_DATA_BLOCK_NUM;
-                ext2->root_node     = get_node(ext2, block_num);
+                read_block(ext2->fd, block_num, ext2->root_node);
             }
 
             // reads information from the inode table.
@@ -140,7 +137,15 @@ namespace FS {
         namespace EXT2 {
             /*
              * TODO: need a search function for a particular node within a data block.
+             *  - all dir entries are small (> 1024 bytes or blocksize). So maximum 12 searches.
              */
+            static inline auto search_entry(FS::EXT2 const *const ext2, vector<string> const &path) {
+
+                // path vector should include the root node: { "/", "a", "b", "c", "d" }
+                // from root, check all entries for the next match;
+                for (auto token : path) {
+                }
+            }
 
             /*
              * BUG: still doesn't fix the problem with zero-length records.
@@ -303,6 +308,17 @@ namespace FS {
     }       // namespace Show
 
     namespace Utils {
+        static inline auto tokenize_path(const i8 *path, vector<string> &vec) -> void {
+            if (path[0] == '/') {
+                vec.push_back("/");
+            }
+            std::stringstream ss(path);
+            string            token;
+            while (getline(ss, token, '/')) {
+                vec.push_back(token);
+            }
+        }
+
         static inline auto set_bit(u8 byte, u8 index) -> u8 {
             return byte | (u8)(1 << index);
         }

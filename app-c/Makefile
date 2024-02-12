@@ -27,7 +27,8 @@ src_test_units    := src/test/units
 build_test_units  := ${target_test}/units
 build_test_runner := ${target_test}
 
-test_units_o      := fs.ext2.o fs.ext2.imap.o fs.ext2.imap.bits.o fs.ext2.inode_table.o fs.ext2.root_dir_entries.o
+test_units_o      := fs.ext2.o fs.ext2.imap.o fs.ext2.imap.bits.o fs.ext2.inode_table.o fs.ext2.root_dir_entries.o \
+											fs.ext2.utils.o
 test_units_o      := ${addprefix ${build_test_units}/, ${test_units_o}}
 
 test_runner       := ${target_test}/runner

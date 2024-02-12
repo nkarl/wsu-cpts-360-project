@@ -11,6 +11,7 @@ int main() {
     test_fs_ext2_imap_bits();
     test_fs_ext2_inode_table();
     test_fs_ext2_root_dir_entries();
+    test_fs_ext2_utils();
 
     printf("\n\nALL: PASSED.\n");
 }
